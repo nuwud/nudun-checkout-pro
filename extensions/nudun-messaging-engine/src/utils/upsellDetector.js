@@ -32,66 +32,123 @@
 /**
  * Detect if a subscription product can be upgraded
  * 
+ * Simplified detection that works without external plan data.
+ * Assumes annual/biannual plans exist for products with monthly/quarterly plans.
+ * 
  * Checks if product has:
  * - Current frequency: quarterly, monthly, bimonthly
- * - Available upgrade: annual or biannual
+ * - Eligible for upgrade to annual
  * 
  * @param {Object} lineItem - Cart line item
- * @param {Array} availablePlans - All available selling plans for this product
  * @returns {UpsellOpportunity|null} Upsell opportunity or null
  * 
  * @example
- * const upsell = detectUpsellOpportunity(lineItem, plans);
+ * const upsell = detectUpsellOpportunity(lineItem);
  * if (upsell) {
  *   console.log(`Save ${upsell.savingsPercentage}% by upgrading!`);
  * }
  */
-export function detectUpsellOpportunity(lineItem, availablePlans = []) {
+export function detectUpsellOpportunity(lineItem) {
+  console.log('[detectUpsellOpportunity] Checking line item:', lineItem?.title || 'Unknown');
+  
   // Must have a selling plan (subscription)
   if (!lineItem?.sellingPlan) {
+    console.log('[detectUpsellOpportunity] No selling plan found');
     return null;
   }
   
   const currentPlan = lineItem.sellingPlan;
   const currentFrequency = extractFrequency(currentPlan);
+  console.log('[detectUpsellOpportunity] Current frequency:', currentFrequency);
   
   // Only upsell certain frequencies
   const upsellableFrequencies = ['monthly', 'bimonthly', 'quarterly'];
   if (!upsellableFrequencies.includes(currentFrequency)) {
+    console.log('[detectUpsellOpportunity] Not upsellable frequency:', currentFrequency);
     return null;
   }
   
-  // Find better plan (longer frequency = better value)
-  const upgradePlan = findUpgradePlan(currentFrequency, availablePlans);
-  if (!upgradePlan) {
-    return null;
+  // Assume annual upgrade exists (standard for subscription products)
+  // Calculate estimated savings based on typical subscription discounts
+  const currentPrice = getCurrentPrice(lineItem);
+  console.log('[detectUpsellOpportunity] Current price (cents):', currentPrice);
+  
+  if (currentPrice <= 0) {
+    console.log('[detectUpsellOpportunity] Invalid price, cannot calculate savings');
+    return null; // Can't calculate without valid price
   }
   
-  // Calculate savings
-  const savings = calculateAnnualSavings(
-    lineItem,
-    currentPlan,
-    upgradePlan
-  );
+  // Estimate upgrade pricing and savings
+  const upgradeEstimate = estimateUpgrade(lineItem, currentFrequency);
+  console.log('[detectUpsellOpportunity] Upgrade estimate:', upgradeEstimate);
   
-  if (savings.amount <= 0) {
+  if (upgradeEstimate.savingsAmount <= 0) {
+    console.log('[detectUpsellOpportunity] No savings, not showing upsell');
     return null; // No savings, don't upsell
   }
   
   return {
     currentProduct: {
-      id: lineItem.id,
-      title: lineItem.title,
+      id: lineItem.id || lineItem.merchandise?.id,
+      title: lineItem.title || lineItem.merchandise?.title,
       image: lineItem.merchandise?.image?.url || lineItem.image?.url || null,
       sellingPlan: currentPlan,
-      price: getCurrentPrice(lineItem),
-      quantity: lineItem.quantity
+      price: currentPrice,
+      quantity: lineItem.quantity || 1
     },
-    upgradePlan: upgradePlan,
-    savingsAmount: savings.amount,
-    savingsPercentage: savings.percentage,
-    upgradeFrequency: extractFrequency(upgradePlan),
-    upgradePrice: getUpgradePrice(lineItem, upgradePlan)
+    upgradePlan: {
+      name: 'Annual Subscription',
+      frequency: 'annual'
+    },
+    savingsAmount: upgradeEstimate.savingsAmount,
+    savingsPercentage: upgradeEstimate.savingsPercentage,
+    upgradeFrequency: 'annual',
+    upgradePrice: upgradeEstimate.upgradePrice
+  };
+}
+
+/**
+ * Estimate upgrade pricing and savings
+ * 
+ * Uses industry-standard subscription discount rates:
+ * - Monthly → Annual: 15-20% savings
+ * - Quarterly → Annual: 10-15% savings
+ * 
+ * @param {Object} lineItem - Cart line item
+ * @param {string} currentFrequency - Current subscription frequency
+ * @returns {{upgradePrice: number, savingsAmount: number, savingsPercentage: number}}
+ */
+function estimateUpgrade(lineItem, currentFrequency) {
+  const currentPrice = getCurrentPrice(lineItem);
+  const quantity = lineItem.quantity || 1;
+  
+  // Typical discount rates for longer commitments
+  const discountRates = {
+    monthly: 0.18,    // 18% savings on annual vs monthly
+    bimonthly: 0.15,  // 15% savings on annual vs bimonthly
+    quarterly: 0.12   // 12% savings on annual vs quarterly
+  };
+  
+  const discountRate = discountRates[currentFrequency] || 0.12;
+  
+  // Calculate deliveries per year
+  const currentDeliveries = getDeliveriesPerYear(currentFrequency);
+  
+  // Current yearly cost
+  const currentYearlyCost = currentPrice * currentDeliveries * quantity;
+  
+  // Estimated annual price with discount
+  const estimatedAnnualPrice = Math.round(currentYearlyCost * (1 - discountRate));
+  const upgradePrice = Math.round(estimatedAnnualPrice / quantity); // Per-unit price
+  
+  // Calculate savings
+  const savingsAmount = currentYearlyCost - estimatedAnnualPrice;
+  const savingsPercentage = Math.round((savingsAmount / currentYearlyCost) * 100);
+  
+  return {
+    upgradePrice,
+    savingsAmount,
+    savingsPercentage
   };
 }
 
@@ -146,10 +203,13 @@ function extractFrequency(sellingPlan) {
  * Find the best upgrade plan for current frequency
  * Priority: annual > biannual > quarterly > bimonthly > monthly
  * 
+ * NOTE: Currently unused - kept for future implementation when we have access to all plans
+ * 
  * @param {string} currentFrequency - Current subscription frequency
  * @param {Array} availablePlans - All available selling plans
  * @returns {Object|null} Best upgrade plan or null
  */
+/* eslint-disable no-unused-vars */
 function findUpgradePlan(currentFrequency, availablePlans) {
   if (!availablePlans || availablePlans.length === 0) {
     return null;
@@ -178,6 +238,8 @@ function findUpgradePlan(currentFrequency, availablePlans) {
 
 /**
  * Calculate annual savings when upgrading plans
+ * 
+ * NOTE: Currently unused - kept for future implementation when we have actual upgrade plans
  * 
  * Compares total yearly cost of current plan vs upgrade plan.
  * Accounts for quantity in cart.
@@ -304,24 +366,23 @@ function getUpgradePrice(lineItem, upgradePlan) {
 /**
  * Detect all upsell opportunities in cart
  * 
+ * Simplified to work without external product data.
+ * Checks each line item for upgrade potential based on current plan.
+ * 
  * @param {Array} lines - All cart line items
- * @param {Object} productData - Product data with selling plans (optional)
  * @returns {Array<UpsellOpportunity>} Array of upsell opportunities
  * 
  * @example
  * const upsells = detectAllUpsells(shopify.lines.value);
  * console.log(`Found ${upsells.length} upsell opportunities`);
  */
-export function detectAllUpsells(lines, productData = {}) {
+export function detectAllUpsells(lines) {
   if (!lines || lines.length === 0) {
     return [];
   }
   
   return lines
-    .map(line => {
-      const availablePlans = productData[line.id]?.sellingPlans || [];
-      return detectUpsellOpportunity(line, availablePlans);
-    })
+    .map(line => detectUpsellOpportunity(line))
     .filter(upsell => upsell !== null);
 }
 

@@ -39,7 +39,16 @@ export default function UpsellBanner({ shopify }) {
   
   // Detect upsell opportunities
   const upsells = useComputed(() => {
-    return detectAllUpsells(lines.value);
+    const detected = detectAllUpsells(lines.value);
+    
+    // Debug logging
+    console.log('[UpsellBanner] Lines:', lines.value?.length || 0);
+    console.log('[UpsellBanner] Detected upsells:', detected.length);
+    if (detected.length > 0) {
+      console.log('[UpsellBanner] First upsell:', detected[0]);
+    }
+    
+    return detected;
   });
   
   // Get currency
@@ -49,11 +58,14 @@ export default function UpsellBanner({ shopify }) {
   
   // Don't render if no upsells
   if (!upsells.value || upsells.value.length === 0) {
+    console.log('[UpsellBanner] No upsells detected, not rendering');
     return null;
   }
   
   // Show highest savings opportunity first
   const bestUpsell = upsells.value.sort((a, b) => b.savingsAmount - a.savingsAmount)[0];
+  
+  console.log('[UpsellBanner] Rendering with best upsell:', bestUpsell);
   
   return (
     <UpsellBannerContent
