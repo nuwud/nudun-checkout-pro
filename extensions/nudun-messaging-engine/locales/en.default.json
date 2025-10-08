@@ -1,6 +1,51 @@
 {
-  "welcome": "Welcome to the {{target}} extension!",
-  "iWouldLikeAFreeGiftWithMyOrder": "I would like to receive a free gift with my order",
-  "addAFreeGiftToMyOrder": "Add a free gift to my order",
-  "attributeChangesAreNotSupported": "Attribute changes are not supported in this checkout"
+  "welcome": "Welcome to NUDUN Checkout Pro",
+  "title": "NUDUN Checkout Pro",
+  
+  "inclusion": {
+    "heading": "✨ What's Included",
+    "multiHeading": "📦 Your Subscriptions",
+    "detailedHeading": "✨ Your Subscription Includes",
+    "totalPrefix": "Total:",
+    "across": "across",
+    "subscription": "subscription",
+    "subscriptions": "subscriptions"
+  },
+  
+  "addOns": {
+    "glass": {
+      "name": "Premium Glass",
+      "plural": "Premium Glasses"
+    },
+    "bottle": {
+      "name": "Bottle",
+      "plural": "Bottles"
+    },
+    "accessory": {
+      "name": "Wine Accessory",
+      "plural": "Wine Accessories"
+    },
+    "sticker": {
+      "name": "Sticker",
+      "plural": "Stickers"
+    },
+    "sample": {
+      "name": "Sample",
+      "plural": "Samples"
+    },
+    "unknown": {
+      "name": "Unknown Add-On",
+      "plural": "Unknown Add-Ons"
+    }
+  },
+  
+  "intervals": {
+    "monthly": "Monthly",
+    "quarterly": "Quarterly",
+    "annual": "Annual"
+  },
+  
+  "compactInclusion": {
+    "label": "Includes:"
+  }
 }
