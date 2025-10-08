@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "shopify.shopify-cli",
+    "ms-vscode.vscode-typescript-next",
+    "github.copilot",
+    "github.copilot-chat",
+    "bradlc.vscode-tailwindcss",
+    "ms-vscode.vscode-json",
+    "sissel.shopify-liquid",
+    "github.vscode-github-actions",
+    "ms-playwright.playwright"
+  ]
+}
