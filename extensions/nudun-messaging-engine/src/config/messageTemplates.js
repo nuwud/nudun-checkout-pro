@@ -144,7 +144,7 @@ export const conservativeTemplates = {
  * @param {'default' | 'legal' | 'conservative'} style - Template style
  * @returns {Object} Message templates
  */
-export function getTemplatesByStyle(style = 'default') {
+export function getTemplatesByStyle(style) {
   switch (style) {
     case 'legal':
       return legalCompliantTemplates;
@@ -159,7 +159,7 @@ export function getTemplatesByStyle(style = 'default') {
  * Get a specific message template
  * @param {string} status - 'met' or 'unmet'
  * @param {string} rewardType - 'shipping', 'gift', or 'discount'
- * @param {string} style - Template style
+ * @param {'default' | 'legal' | 'conservative'} style - Template style
  * @returns {Object} Message template with title, message, progressText
  */
 export function getMessageTemplate(status, rewardType, style = 'default') {
@@ -186,7 +186,7 @@ export function interpolateTemplate(template, values) {
  * @param {string} status - 'met' or 'unmet'
  * @param {string} rewardType - 'shipping', 'gift', or 'discount'
  * @param {Object} values - Values for interpolation
- * @param {string} style - Template style
+ * @param {'default' | 'legal' | 'conservative'} style - Template style
  * @returns {Object} Complete message with title, message, progressText
  */
 export function buildMessage(status, rewardType, values, style = 'default') {
