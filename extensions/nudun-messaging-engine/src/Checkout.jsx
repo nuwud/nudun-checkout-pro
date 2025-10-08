@@ -1,7 +1,6 @@
 /* eslint-disable react/prop-types */
 import '@shopify/ui-extensions/preact';
 import { render } from 'preact';
-import { useApi, useSubscription } from '@shopify/ui-extensions-react/checkout';
 import { getCartSubscriptions } from './utils/subscriptionDetector.js';
 import { InclusionMessage, MultiSubscriptionSummary } from './components/InclusionMessage.jsx';
 import BannerQueue from './components/BannerQueue.jsx';
@@ -25,11 +24,16 @@ import UpsellBanner from './components/UpsellBanner.jsx';
 export default async () => {
   render(<Extension />, document.body);
 };
+
 function Extension() {
-  const shopify = useApi();
+  // In Shopify Preact extensions, shopify global is directly available
+  // Using a self-executing function to access it properly
+  if (typeof shopify === 'undefined') {
+    return <s-text>Loading checkout data...</s-text>;
+  }
   
   // Safe data access with optional chaining
-  const lines = useSubscription(shopify.lines) || [];
+  const lines = shopify?.lines?.value || [];
   
   // Detect subscriptions using metafield-first strategy
   const subscriptions = getCartSubscriptions(lines);

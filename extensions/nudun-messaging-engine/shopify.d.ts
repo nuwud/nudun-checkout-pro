@@ -25,6 +25,12 @@ declare module './src/components/BannerQueue.jsx' {
 }
 
 //@ts-ignore
+declare module './src/components/UpsellBanner.jsx' {
+  const shopify: import('@shopify/ui-extensions/purchase.checkout.block.render').Api;
+  const globalThis: { shopify: typeof shopify };
+}
+
+//@ts-ignore
 declare module './src/utils/metafieldParser.js' {
   const shopify: import('@shopify/ui-extensions/purchase.checkout.block.render').Api;
   const globalThis: { shopify: typeof shopify };
@@ -50,6 +56,24 @@ declare module './src/utils/thresholdDetector.js' {
 
 //@ts-ignore
 declare module './src/config/thresholdConfig.js' {
+  const shopify: import('@shopify/ui-extensions/purchase.checkout.block.render').Api;
+  const globalThis: { shopify: typeof shopify };
+}
+
+//@ts-ignore
+declare module './src/utils/upsellDetector.js' {
+  const shopify: import('@shopify/ui-extensions/purchase.checkout.block.render').Api;
+  const globalThis: { shopify: typeof shopify };
+}
+
+//@ts-ignore
+declare module './src/config/upsellTemplates.js' {
+  const shopify: import('@shopify/ui-extensions/purchase.checkout.block.render').Api;
+  const globalThis: { shopify: typeof shopify };
+}
+
+//@ts-ignore
+declare module './src/config/merchantSettings.js' {
   const shopify: import('@shopify/ui-extensions/purchase.checkout.block.render').Api;
   const globalThis: { shopify: typeof shopify };
 }
