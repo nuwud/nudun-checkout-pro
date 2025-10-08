@@ -1,52 +1,17 @@
 /* eslint-disable react/prop-types */
-import '@shopify/ui-extensions/preact';
-import { render } from 'preact';
-import { getCartSubscriptions } from './utils/subscriptionDetector.js';
-import { InclusionMessage, MultiSubscriptionSummary } from './components/InclusionMessage.jsx';
+import { getAddOnIcon, formatAddOnName } from '../config/addOnConfig.js';
 
 /**
- * NUDUN Checkout Pro Extension - v2.0
+ * InclusionMessage displays what's included in a single subscription.
+ * Shows add-ons with icons and counts in a success banner.
  * 
- * Features:
- * - Generic add-on system (metafield-first, keyword fallback)
- * - Extensible configuration (5 add-on types)
- * - Subscription detection and display
- * - Production-ready with Shopify compliance
- * 
- * Phase 1 Implementation: Generic Add-On System (US5)
- */
-export default async () => {
-  render(<Extension />, document.body);
-};
-
-function Extension() {
-  // Safe data access with optional chaining
-  const lines = shopify?.lines?.value || [];
-  
-  // Graceful fallback if cart data unavailable
-  if (lines.length === 0) {
-    return null;
-  }
-  
-  // Detect subscriptions using metafield-first strategy
-  const subscriptions = getCartSubscriptions(lines);
-  
-  // No subscriptions? Don't render anything
-  if (subscriptions.length === 0) {
-    return null;
-  }
-  
-  // Single subscription: Show simple inclusion message
-  if (subscriptions.length === 1) {
-    return <InclusionMessage subscription={subscriptions[0].subscription} />;
-  }
-  
-  // Multiple subscriptions: Show aggregated summary
-  return <MultiSubscriptionSummary subscriptions={subscriptions} />;
-}
- *     addOnCounts: { glass: 4, sticker: 2 }
- *   }}
- * />
+ * @param {Object} props
+ * @param {Object} props.subscription - Subscription data with addOns array and addOnCounts object
+ * @example
+ * <InclusionMessage subscription={{
+ *   addOns: ['glass', 'sticker'],
+ *   addOnCounts: { glass: 4, sticker: 2 }
+ * }} />
  * // Renders: "✨ Includes 4 Premium Glasses + 2 Stickers"
  */
 export function InclusionMessage({ subscription }) {
@@ -68,7 +33,7 @@ export function InclusionMessage({ subscription }) {
 
   return (
     <s-banner tone="success">
-      <s-heading>✨ What's Included</s-heading>
+      <s-heading>✨ What is Included</s-heading>
       <s-text>{addOnText}</s-text>
     </s-banner>
   );
@@ -79,7 +44,8 @@ export function InclusionMessage({ subscription }) {
  * 
  * For use in cart summaries or product cards where space is limited.
  * 
- * @param {InclusionMessageProps} props
+ * @param {Object} props
+ * @param {Object} props.subscription - Subscription data with addOns array and addOnCounts object
  * @returns {JSX.Element}
  * 
  * @example
@@ -107,13 +73,14 @@ export function CompactInclusionMessage({ subscription }) {
     </s-text>
   );
 }
-
 /**
  * Detailed InclusionMessage (with images)
  * 
  * For use in checkout where we have more space and want to show product images.
  * 
- * @param {InclusionMessageProps & { showImages?: boolean }} props
+ * @param {Object} props
+ * @param {Object} props.subscription - Subscription data with addOns array and addOnCounts object
+ * @param {boolean} [props.showImages] - Whether to show product images
  * @returns {JSX.Element}
  * 
  * @example

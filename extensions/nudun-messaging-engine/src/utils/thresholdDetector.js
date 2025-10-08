@@ -10,12 +10,17 @@
  */
 
 import {
+  getThresholdsForCurrency,
   getNextThreshold,
   getMetThresholds,
   calculateRemaining,
-  getActiveThresholds,
-  interpolateMessage
+  calculateProgress,
+  formatAmount,
+  interpolateMessage,
+  getActiveThresholds
 } from '../config/thresholdConfig.js';
+import { buildMessage, applyCustomTemplates } from '../config/messageTemplates.js';
+import { getActiveTemplateStyle, getCustomTemplates } from '../config/merchantSettings.js';
 
 /**
  * @typedef {Object} ThresholdStatus
