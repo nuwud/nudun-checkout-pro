@@ -19,6 +19,12 @@ declare module './src/components/InclusionMessage.jsx' {
 }
 
 //@ts-ignore
+declare module './src/components/BannerQueue.jsx' {
+  const shopify: import('@shopify/ui-extensions/purchase.checkout.block.render').Api;
+  const globalThis: { shopify: typeof shopify };
+}
+
+//@ts-ignore
 declare module './src/utils/metafieldParser.js' {
   const shopify: import('@shopify/ui-extensions/purchase.checkout.block.render').Api;
   const globalThis: { shopify: typeof shopify };
@@ -32,6 +38,18 @@ declare module './src/utils/keywordFallback.js' {
 
 //@ts-ignore
 declare module './src/config/addOnConfig.js' {
+  const shopify: import('@shopify/ui-extensions/purchase.checkout.block.render').Api;
+  const globalThis: { shopify: typeof shopify };
+}
+
+//@ts-ignore
+declare module './src/utils/thresholdDetector.js' {
+  const shopify: import('@shopify/ui-extensions/purchase.checkout.block.render').Api;
+  const globalThis: { shopify: typeof shopify };
+}
+
+//@ts-ignore
+declare module './src/config/thresholdConfig.js' {
   const shopify: import('@shopify/ui-extensions/purchase.checkout.block.render').Api;
   const globalThis: { shopify: typeof shopify };
 }
