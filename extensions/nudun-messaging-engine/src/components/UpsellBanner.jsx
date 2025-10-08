@@ -13,6 +13,12 @@
 import '@shopify/ui-extensions/preact';
 import { useComputed } from '@preact/signals';
 import { detectAllUpsells, formatSavings } from '../utils/upsellDetector.js';
+import { buildUpsellMessage } from '../config/upsellTemplates.js';
+import { 
+  getActiveUpsellTemplateStyle, 
+  getCustomUpsellTemplates,
+  getUpsellDisplaySettings 
+} from '../config/merchantSettings.js';
 
 /**
  * UpsellBanner Component
@@ -58,33 +64,81 @@ export default function UpsellBanner({ shopify }) {
 }
 
 /**
- * UpsellBannerContent - Individual upsell suggestion
+ * UpsellBannerContent - Individual upsell suggestion with customizable templates
  */
 function UpsellBannerContent({ upsell, currency }) {
-  const { currentProduct, savingsAmount, savingsPercentage, upgradeFrequency } = upsell;
+  // Get merchant settings
+  const displaySettings = getUpsellDisplaySettings();
+  const templateStyle = getActiveUpsellTemplateStyle();
+  const customTemplates = getCustomUpsellTemplates();
   
-  const savingsText = formatSavings(savingsAmount, currency);
-  const currentFreq = formatFrequency(extractFrequencyFromProduct(currentProduct));
-  const upgradeFreq = formatFrequency(upgradeFrequency);
+  // Build customizable message
+  const message = buildUpsellMessage(upsell, currency, templateStyle, customTemplates);
+  
+  const { currentProduct } = upsell;
+  const productImage = currentProduct.image;
+  const currentPrice = formatSavings(currentProduct.price, currency);
+  const upgradePrice = formatSavings(upsell.upgradePrice, currency);
   
   return (
     <s-banner tone="info">
       <s-stack direction="block">
-        <s-heading>💡 Save More with {upgradeFreq} Subscription</s-heading>
+        {/* Product Image + Content Layout */}
+        {displaySettings.showProductImage && productImage && displaySettings.imagePosition === 'top' && (
+          <s-image 
+            src={productImage} 
+            alt={currentProduct.title}
+          />
+        )}
         
-        <s-text>
-          Upgrade your {currentFreq} subscription to {upgradeFreq} and save{' '}
-          <strong>{savingsText}/year</strong> ({savingsPercentage}% savings)
-        </s-text>
-        
-        <s-text>
-          You&apos;re currently subscribed to: {currentProduct.title}
-        </s-text>
+        <s-stack direction="inline">
+          {displaySettings.showProductImage && productImage && displaySettings.imagePosition === 'left' && (
+            <s-image 
+              src={productImage} 
+              alt={currentProduct.title}
+            />
+          )}
+          
+          <s-stack direction="block">
+            {/* Customizable Heading */}
+            <s-heading>{message.heading}</s-heading>
+            
+            {/* Customizable Message */}
+            <s-text>{message.message}</s-text>
+            
+            {/* Price Comparison (Optional) */}
+            {(displaySettings.showCurrentPrice || displaySettings.showUpgradePrice) && (
+              <s-stack direction="inline">
+                {displaySettings.showCurrentPrice && (
+                  <s-text>Current: {currentPrice}</s-text>
+                )}
+                {displaySettings.showCurrentPrice && displaySettings.showUpgradePrice && (
+                  <s-text>→</s-text>
+                )}
+                {displaySettings.showUpgradePrice && (
+                  <s-text>Upgrade: {upgradePrice}</s-text>
+                )}
+              </s-stack>
+            )}
+            
+            {/* Customizable Context */}
+            {displaySettings.showProductName && (
+              <s-text>{message.context}</s-text>
+            )}
+          </s-stack>
+          
+          {displaySettings.showProductImage && productImage && displaySettings.imagePosition === 'right' && (
+            <s-image 
+              src={productImage} 
+              alt={currentProduct.title}
+            />
+          )}
+        </s-stack>
         
         {/* Future: Add upgrade button here when API supports it */}
         {/*
         <s-button onClick={handleUpgrade}>
-          Upgrade & Save {savingsPercentage}%
+          {message.buttonText}
         </s-button>
         */}
       </s-stack>

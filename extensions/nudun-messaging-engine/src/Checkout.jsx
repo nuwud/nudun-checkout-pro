@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import '@shopify/ui-extensions/preact';
 import { render } from 'preact';
+import { useApi, useSubscription } from '@shopify/ui-extensions-react/checkout';
 import { getCartSubscriptions } from './utils/subscriptionDetector.js';
 import { InclusionMessage, MultiSubscriptionSummary } from './components/InclusionMessage.jsx';
 import BannerQueue from './components/BannerQueue.jsx';
@@ -24,10 +25,11 @@ import UpsellBanner from './components/UpsellBanner.jsx';
 export default async () => {
   render(<Extension />, document.body);
 };
-
 function Extension() {
+  const shopify = useApi();
+  
   // Safe data access with optional chaining
-  const lines = shopify?.lines?.value || [];
+  const lines = useSubscription(shopify.lines) || [];
   
   // Detect subscriptions using metafield-first strategy
   const subscriptions = getCartSubscriptions(lines);
@@ -44,10 +46,7 @@ function Extension() {
       />
       
       {/* Phase 2B: Strategic Upsells */}
-      <UpsellBanner 
-        shopify={shopify}
-        allowDismiss={true}
-      />
+      <UpsellBanner shopify={shopify} />
       
       {/* Phase 1: Subscription Inclusion Messages */}
       {subscriptions.length === 1 && (

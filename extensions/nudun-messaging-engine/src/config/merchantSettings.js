@@ -13,7 +13,7 @@
  */
 
 /**
- * Template Style Selection
+ * Template Style Selection - Threshold Messages
  * 
  * Options:
  * - 'default': Standard marketing language with "free" terminology
@@ -24,9 +24,37 @@
 export const TEMPLATE_STYLE = 'default'; // Change to 'legal' or 'conservative' as needed
 
 /**
- * Custom Message Templates (Optional)
+ * Upsell Template Style Selection
  * 
- * Define your own messages here. These override the template style above.
+ * Options:
+ * - 'default': Standard marketing language with savings emphasis
+ * - 'legal': Conservative, compliance-friendly language
+ * - 'minimal': Brief, straightforward messaging
+ * - 'enthusiastic': High-energy marketing language
+ * - 'custom': Use CUSTOM_UPSELL_TEMPLATES below for full control
+ */
+export const UPSELL_TEMPLATE_STYLE = 'default';
+
+/**
+ * Upsell Display Settings
+ * 
+ * Control what information is shown in upsell banners
+ */
+export const UPSELL_DISPLAY_SETTINGS = {
+  showProductImage: true,        // Show product thumbnail in upsell
+  showCurrentPrice: true,         // Show current subscription price
+  showUpgradePrice: true,         // Show upgrade subscription price
+  showSavingsAmount: true,        // Show savings dollar amount
+  showSavingsPercentage: true,    // Show savings percentage
+  showProductName: true,          // Show product title
+  imageSize: 'small',             // 'small', 'medium', 'large'
+  imagePosition: 'left'           // 'left', 'right', 'top'
+};
+
+/**
+ * Custom Threshold Message Templates (Optional)
+ * 
+ * Define your own messages here. These override the TEMPLATE_STYLE above.
  * Use template variables:
  * - {amount} - Remaining amount to reach threshold (e.g., "$25.00")
  * - {threshold} - Threshold value (e.g., "$50.00")
@@ -62,6 +90,32 @@ export const CUSTOM_TEMPLATES = {
       progressText: "Bonus item included"
     }
   }
+  */
+};
+
+/**
+ * Custom Upsell Templates (Optional)
+ * 
+ * Define your own upsell messages here. These override UPSELL_TEMPLATE_STYLE above.
+ * Use template variables:
+ * - {productName} - Product title
+ * - {currentFrequency} - Current subscription frequency (e.g., "Quarterly")
+ * - {upgradeFrequency} - Upgrade frequency (e.g., "Annual")
+ * - {savingsAmount} - Savings amount with currency (e.g., "$45.00")
+ * - {savingsPercentage} - Savings percentage (e.g., "15")
+ * - {currentPrice} - Current subscription price
+ * - {upgradePrice} - Upgrade subscription price
+ * 
+ * Example: Custom upsell messaging
+ */
+export const CUSTOM_UPSELL_TEMPLATES = {
+  // Uncomment and edit to customize:
+  /*
+  heading: '💰 Switch to {upgradeFrequency} & Save',
+  message: 'Upgrade {productName} from {currentFrequency} to {upgradeFrequency} and save {savingsAmount} every year',
+  context: 'Current plan: {currentFrequency} at {currentPrice}',
+  buttonText: 'Upgrade Now',
+  compact: 'Save {savingsAmount}/year with {upgradeFrequency}'
   */
 };
 
@@ -209,4 +263,31 @@ export function getCustomTemplates() {
     return CUSTOM_TEMPLATES;
   }
   return null;
+}
+
+/**
+ * Get active upsell template style
+ * @returns {string} Upsell template style to use
+ */
+export function getActiveUpsellTemplateStyle() {
+  return UPSELL_TEMPLATE_STYLE;
+}
+
+/**
+ * Get custom upsell templates if defined
+ * @returns {Object|null} Custom upsell templates or null
+ */
+export function getCustomUpsellTemplates() {
+  if (CUSTOM_UPSELL_TEMPLATES.heading || CUSTOM_UPSELL_TEMPLATES.message) {
+    return CUSTOM_UPSELL_TEMPLATES;
+  }
+  return null;
+}
+
+/**
+ * Get upsell display settings
+ * @returns {Object} Upsell display configuration
+ */
+export function getUpsellDisplaySettings() {
+  return UPSELL_DISPLAY_SETTINGS;
 }
