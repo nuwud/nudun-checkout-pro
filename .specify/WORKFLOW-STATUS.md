@@ -4,7 +4,7 @@
 
 **Branch**: `feature/included-glassware`  
 **Created**: 2025-10-07  
-**Workflow Stage**: 🟢 **IMPLEMENTATION PLAN COMPLETE**
+**Workflow Stage**: 🟢 **TASKS COMPLETE - READY TO IMPLEMENT**
 
 ---
 
@@ -35,34 +35,29 @@
   - 9 tasks sequenced foundation → validation → integration
   - 12.5 hour estimate (~2 days)
 
+### ✅ Step 4: Task Breakdown (v1.0.0)
+- **File**: `.specify/tasks/included-glassware-tasks.md`
+- **Status**: Complete → Ready for Implementation
+- **Command**: `/speckit.tasks` ✅ COMPLETED
+- **Git**: Committed to `feature/included-glassware` branch (commit af213aa)
+- **Key Enhancements**:
+  - **NEW**: Display glass value from store (e.g., "$25 value")
+  - **NEW**: Glass product price lookup utility (T006)
+  - **NEW**: Prevents duplicate purchases with clear value messaging
+  - 35 tasks across 10 phases
+  - 20 hours total (11.5 hours for MVP)
+  - TDD approach (write tests first)
+  - 8 parallel opportunities identified
+
 ---
 
 ## Next Steps
 
-### 🔵 Step 4: Task Breakdown (NEXT)
+### 🔵 Step 5: Implementation (NEXT)
 
 ### 🔵 Step 4: Task Breakdown (NEXT)
 
-**Command to run**: `/speckit.tasks`
-
-**What it will do**:
-- Break implementation plan into atomic, reviewable tasks
-- Create task dependency graph
-- Estimate effort per task
-- Define acceptance criteria per task
-- Generate commit message templates
-
-**Output location**: `.specify/tasks/included-glassware-tasks.md`
-
-**Expected Outcome**:
-- Numbered task list (TASK-001, TASK-002, etc.)
-- Each task independently testable
-- Clear definition of done per task
-- Ready for implementation phase
-
----
-
-### 🔵 Step 5: Implementation (FINAL)
+### 🔵 Step 5: Implementation (NEXT)
 
 **Command to run**: `/speckit.implement`
 
@@ -177,4 +172,4 @@ code .specify/memory/constitution.md
 ---
 
 **Last Updated**: 2025-10-07  
-**Next Action**: Run `/speckit.tasks` to break down plan into actionable tasks
+**Next Action**: Run `/speckit.implement` to execute tasks OR start manual implementation following task list
