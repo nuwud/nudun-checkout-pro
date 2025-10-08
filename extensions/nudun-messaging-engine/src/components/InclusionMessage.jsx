@@ -1,49 +1,49 @@
-/**
- * InclusionMessage Component
- * 
- * Displays subscription add-ons in a user-friendly banner.
- * Supports multiple add-on types with extensible configuration.
- * 
- * Related: T009 - Refactor InclusionMessage component
- * User Story: US5 - Generic Add-On System
- */
-
 /* eslint-disable react/prop-types */
-/* eslint-disable react/no-unescaped-entities */
-
 import '@shopify/ui-extensions/preact';
-import { formatAddOnName, getAddOnIcon } from '../config/addOnConfig.js';
+import { render } from 'preact';
+import { getCartSubscriptions } from './utils/subscriptionDetector.js';
+import { InclusionMessage, MultiSubscriptionSummary } from './components/InclusionMessage.jsx';
 
 /**
- * @typedef {Object} InclusionMessageProps
- * @property {Object} subscription - Subscription data with addOns and addOnCounts
- * @property {string} [locale] - Locale code (default: 'en')
+ * NUDUN Checkout Pro Extension - v2.0
+ * 
+ * Features:
+ * - Generic add-on system (metafield-first, keyword fallback)
+ * - Extensible configuration (5 add-on types)
+ * - Subscription detection and display
+ * - Production-ready with Shopify compliance
+ * 
+ * Phase 1 Implementation: Generic Add-On System (US5)
  */
+export default async () => {
+  render(<Extension />, document.body);
+};
 
-/**
- * InclusionMessage Component
- * 
- * Displays subscription add-ons in an info banner.
- * 
- * @param {InclusionMessageProps} props
- * @returns {JSX.Element}
- * 
- * @example
- * <InclusionMessage 
- *   subscription={{
- *     interval: 'quarterly',
- *     addOns: ['glass'],
- *     addOnCounts: { glass: 1 }
- *   }}
- * />
- * // Renders: "✨ Includes 1 Premium Glass"
- * 
- * @example
- * // Multiple add-ons
- * <InclusionMessage 
- *   subscription={{
- *     interval: 'annual',
- *     addOns: ['glass', 'sticker'],
+function Extension() {
+  // Safe data access with optional chaining
+  const lines = shopify?.lines?.value || [];
+  
+  // Graceful fallback if cart data unavailable
+  if (lines.length === 0) {
+    return null;
+  }
+  
+  // Detect subscriptions using metafield-first strategy
+  const subscriptions = getCartSubscriptions(lines);
+  
+  // No subscriptions? Don't render anything
+  if (subscriptions.length === 0) {
+    return null;
+  }
+  
+  // Single subscription: Show simple inclusion message
+  if (subscriptions.length === 1) {
+    return <InclusionMessage subscription={subscriptions[0].subscription} />;
+  }
+  
+  // Multiple subscriptions: Show aggregated summary
+  return <MultiSubscriptionSummary subscriptions={subscriptions} />;
+}
  *     addOnCounts: { glass: 4, sticker: 2 }
  *   }}
  * />
