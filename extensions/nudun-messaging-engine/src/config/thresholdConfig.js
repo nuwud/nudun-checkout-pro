@@ -12,7 +12,8 @@
 /**
  * @typedef {Object} ThresholdConfig
  * @property {number} value - Threshold value in cents (e.g., 5000 = $50.00)
- * @property {string} message - Message template to display
+ * @property {string} message - Message template to display (for unmet threshold)
+ * @property {string} metMessage - Message to display when threshold is met
  * @property {string} tone - Banner tone ('info', 'success', 'warning', 'critical')
  * @property {number} priority - Display priority (1 = highest)
  * @property {boolean} [hideWhenMet] - Hide message after threshold met (default: false)
