@@ -22,13 +22,12 @@ import { detectAllUpsells, formatSavings } from '../utils/upsellDetector.js';
  * 
  * @param {Object} props
  * @param {Object} props.shopify - Shopify global API
- * @param {boolean} [props.allowDismiss=true] - Allow dismissal
  * @returns {JSX.Element|null} Upsell banner or null
  * 
  * @example
- * <UpsellBanner shopify={shopify} allowDismiss={true} />
+ * <UpsellBanner shopify={shopify} />
  */
-export default function UpsellBanner({ shopify, allowDismiss = true }) {
+export default function UpsellBanner({ shopify }) {
   // Reactive cart monitoring
   const lines = useComputed(() => shopify?.lines?.value || []);
   
@@ -54,7 +53,6 @@ export default function UpsellBanner({ shopify, allowDismiss = true }) {
     <UpsellBannerContent
       upsell={bestUpsell}
       currency={currency.value}
-      allowDismiss={allowDismiss}
     />
   );
 }
@@ -62,7 +60,7 @@ export default function UpsellBanner({ shopify, allowDismiss = true }) {
 /**
  * UpsellBannerContent - Individual upsell suggestion
  */
-function UpsellBannerContent({ upsell, currency, allowDismiss }) {
+function UpsellBannerContent({ upsell, currency }) {
   const { currentProduct, savingsAmount, savingsPercentage, upgradeFrequency } = upsell;
   
   const savingsText = formatSavings(savingsAmount, currency);
@@ -71,17 +69,16 @@ function UpsellBannerContent({ upsell, currency, allowDismiss }) {
   
   return (
     <s-banner tone="info">
-      <s-stack direction="block" spacing="tight">
+      <s-stack direction="block">
         <s-heading>💡 Save More with {upgradeFreq} Subscription</s-heading>
         
         <s-text>
           Upgrade your {currentFreq} subscription to {upgradeFreq} and save{' '}
-          <s-text emphasis="bold">{savingsText}/year</s-text>{' '}
-          ({savingsPercentage}% savings)
+          <strong>{savingsText}/year</strong> ({savingsPercentage}% savings)
         </s-text>
         
-        <s-text size="small" appearance="subdued">
-          You're currently subscribed to: {currentProduct.title}
+        <s-text>
+          You&apos;re currently subscribed to: {currentProduct.title}
         </s-text>
         
         {/* Future: Add upgrade button here when API supports it */}
@@ -116,7 +113,7 @@ export function CompactUpsellBanner({ shopify }) {
     <s-banner tone="info">
       <s-text>
         💡 Upgrade to {formatFrequency(bestUpsell.upgradeFrequency)} and save{' '}
-        <s-text emphasis="bold">{savingsText}/year</s-text>
+        <strong>{savingsText}/year</strong>
       </s-text>
     </s-banner>
   );
@@ -125,7 +122,7 @@ export function CompactUpsellBanner({ shopify }) {
 /**
  * DetailedUpsellBanner - Enhanced version with breakdown
  */
-export function DetailedUpsellBanner({ shopify, allowDismiss = true }) {
+export function DetailedUpsellBanner({ shopify }) {
   const lines = useComputed(() => shopify?.lines?.value || []);
   const upsells = useComputed(() => detectAllUpsells(lines.value));
   const currency = useComputed(() => {
@@ -150,29 +147,29 @@ export function DetailedUpsellBanner({ shopify, allowDismiss = true }) {
   
   return (
     <s-banner tone="info">
-      <s-stack direction="block" spacing="base">
+      <s-stack direction="block">
         <s-heading>💡 Upgrade & Save {savingsPercentage}%</s-heading>
         
         <s-text>
-          Switch from <s-text emphasis="bold">{currentFreq}</s-text> to{' '}
-          <s-text emphasis="bold">{upgradeFreq}</s-text> delivery
+          Switch from <strong>{currentFreq}</strong> to{' '}
+          <strong>{upgradeFreq}</strong> delivery
         </s-text>
         
         <s-divider />
         
-        <s-stack direction="block" spacing="tight">
-          <s-text size="small">
+        <s-stack direction="block">
+          <s-text>
             Current: {currentDeliveries}x/year @ {formatSavings(currentProduct.price, currency.value)} ={' '}
             {formatSavings(currentProduct.price * currentDeliveries, currency.value)}/year
           </s-text>
           
-          <s-text size="small">
+          <s-text>
             Upgrade: {upgradeDeliveries}x/year @ {upgradePriceText} ={' '}
             {formatSavings(upgradePrice * upgradeDeliveries, currency.value)}/year
           </s-text>
           
-          <s-text size="small" emphasis="bold" appearance="success">
-            Annual Savings: {savingsText}
+          <s-text>
+            <strong>Annual Savings: {savingsText}</strong>
           </s-text>
         </s-stack>
       </s-stack>
