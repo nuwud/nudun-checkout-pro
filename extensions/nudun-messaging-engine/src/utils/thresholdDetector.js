@@ -108,7 +108,7 @@ export function hasThresholdChanged(previous, current) {
  * 
  * @param {number} cartValue - Current cart subtotal in cents
  * @param {string} currencyCode - Currency code
- * @returns {Array<{message: string, tone: string, met: boolean, priority: number}>} Messages to display
+ * @returns {Array<{message: string, tone: string, met: boolean, priority: number, progress: number}>} Messages to display
  * 
  * @example
  * const messages = getThresholdMessages(3500, 'USD');
@@ -117,7 +117,8 @@ export function hasThresholdChanged(previous, current) {
  * //   message: 'Add $15.00 more for free shipping!',
  * //   tone: 'info',
  * //   met: false,
- * //   priority: 2
+ * //   priority: 2,
+ * //   progress: 70
  * // }]
  */
 export function getThresholdMessages(cartValue, currencyCode) {
