@@ -1,39 +1,46 @@
+/* eslint-disable react/prop-types */
 import '@shopify/ui-extensions/preact';
 import { render } from 'preact';
+import { getCartSubscriptions } from './utils/subscriptionDetector.js';
+import { InclusionMessage, MultiSubscriptionSummary } from './components/InclusionMessage.jsx';
 
 /**
- * NUDUN Checkout Pro Extension
- * Production-ready implementation with Shopify approval compliance:
- * - Proper error handling with optional chaining
- * - Graceful degradation when data unavailable
- * - No external dependencies or tracking
- * - Mobile-responsive UI
+ * NUDUN Checkout Pro Extension - v2.0
+ * 
+ * Features:
+ * - Generic add-on system (metafield-first, keyword fallback)
+ * - Extensible configuration (5 add-on types)
+ * - Subscription detection and display
+ * - Production-ready with Shopify compliance
+ * 
+ * Phase 1 Implementation: Generic Add-On System (US5)
  */
 export default async () => {
   render(<Extension />, document.body);
 };
 
 function Extension() {
-  // Safe data access with optional chaining (Shopify approval requirement)
-  // Note: shopify.cost.totalAmount is a signal, access .value to get the Money object
-  const totalAmountObj = shopify?.cost?.totalAmount?.value;
-  const itemCount = shopify?.lines?.value?.length || 0;
+  // Safe data access with optional chaining
+  const lines = shopify?.lines?.value || [];
   
   // Graceful fallback if cart data unavailable
-  if (!totalAmountObj) {
-    return null; // Don't render anything if data not ready
+  if (lines.length === 0) {
+    return null;
   }
   
-  // Extract amount from Money object
-  // Note: Money object structure: { amount: "125.00", currencyCode: "USD" }
-  const amount = totalAmountObj.amount || '0.00';
+  // Detect subscriptions using metafield-first strategy
+  const subscriptions = getCartSubscriptions(lines);
   
-  return (
-    <s-banner tone="info">
-      <s-heading>NUDUN Checkout Pro</s-heading>
-      <s-text>
-        Your cart contains {itemCount} {itemCount === 1 ? 'item' : 'items'} totaling ${amount}
-      </s-text>
-    </s-banner>
-  );
+  // No subscriptions? Don't render anything
+  if (subscriptions.length === 0) {
+    return null;
+  }
+  
+  // Single subscription: Show simple inclusion message
+  if (subscriptions.length === 1) {
+    return <InclusionMessage subscription={subscriptions[0].subscription} />;
+  }
+  
+  // Multiple subscriptions: Show aggregated summary
+  return <MultiSubscriptionSummary subscriptions={subscriptions} />;
 }
