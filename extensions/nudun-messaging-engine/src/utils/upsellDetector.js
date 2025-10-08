@@ -13,6 +13,7 @@
  * @typedef {Object} SubscriptionProduct
  * @property {string} id - Product variant ID
  * @property {string} title - Product title
+ * @property {string|null} image - Product image URL
  * @property {Object} sellingPlan - Selling plan details
  * @property {number} price - Price in cents
  * @property {number} quantity - Quantity in cart
@@ -81,6 +82,7 @@ export function detectUpsellOpportunity(lineItem, availablePlans = []) {
     currentProduct: {
       id: lineItem.id,
       title: lineItem.title,
+      image: lineItem.merchandise?.image?.url || lineItem.image?.url || null,
       sellingPlan: currentPlan,
       price: getCurrentPrice(lineItem),
       quantity: lineItem.quantity
