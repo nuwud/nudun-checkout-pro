@@ -1,0 +1,47 @@
+{
+  "welcome": "Willkommen bei NUDUN Checkout Pro",
+  "title": "NUDUN Checkout Pro",
+  "inclusion": {
+    "heading": "✨ Was ist enthalten",
+    "multiHeading": "📦 Ihre Abonnements",
+    "detailedHeading": "✨ Ihr Abonnement beinhaltet",
+    "totalPrefix": "Gesamt:",
+    "across": "über",
+    "subscription": "Abonnement",
+    "subscriptions": "Abonnements"
+  },
+  "addOns": {
+    "glass": {
+      "name": "Premium-Glas",
+      "plural": "Premium-Gläser"
+    },
+    "bottle": {
+      "name": "Flasche",
+      "plural": "Flaschen"
+    },
+    "accessory": {
+      "name": "Wein-Zubehör",
+      "plural": "Wein-Zubehör"
+    },
+    "sticker": {
+      "name": "Aufkleber",
+      "plural": "Aufkleber"
+    },
+    "sample": {
+      "name": "Probe",
+      "plural": "Proben"
+    },
+    "unknown": {
+      "name": "Unbekannter Artikel",
+      "plural": "Unbekannte Artikel"
+    }
+  },
+  "intervals": {
+    "monthly": "Monatlich",
+    "quarterly": "Vierteljährlich",
+    "annual": "Jährlich"
+  },
+  "compactInclusion": {
+    "label": "Enthalten:"
+  }
+}

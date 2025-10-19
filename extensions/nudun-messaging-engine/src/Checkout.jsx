@@ -1,39 +1,65 @@
+/* eslint-disable react/prop-types */
 import '@shopify/ui-extensions/preact';
 import { render } from 'preact';
+import { getCartSubscriptions } from './utils/subscriptionDetector.js';
+import { InclusionMessage, MultiSubscriptionSummary } from './components/InclusionMessage.jsx';
+import BannerQueue from './components/BannerQueue.jsx';
+import UpsellBanner from './components/UpsellBanner.jsx';
 
 /**
- * NUDUN Checkout Pro Extension
- * Production-ready implementation with Shopify approval compliance:
- * - Proper error handling with optional chaining
- * - Graceful degradation when data unavailable
- * - No external dependencies or tracking
- * - Mobile-responsive UI
+ * NUDUN Checkout Pro Extension - v3.0
+ * 
+ * Features:
+ * - Generic add-on system (metafield-first, keyword fallback)
+ * - Extensible configuration (5 add-on types)
+ * - Subscription detection and display
+ * - Real-time dynamic messaging with threshold-based incentives
+ * - Smart upsell suggestions (quarterly → annual upgrades)
+ * - Production-ready with Shopify compliance
+ * 
+ * Phase 1 Implementation: Generic Add-On System (US5)
+ * Phase 2A Implementation: Real-Time Dynamic Messaging (US6)
+ * Phase 2B Implementation: Strategic Upsells (US7)
  */
 export default async () => {
   render(<Extension />, document.body);
 };
 
 function Extension() {
-  // Safe data access with optional chaining (Shopify approval requirement)
-  // Note: shopify.cost.totalAmount is a signal, access .value to get the Money object
-  const totalAmountObj = shopify?.cost?.totalAmount?.value;
-  const itemCount = shopify?.lines?.value?.length || 0;
-  
-  // Graceful fallback if cart data unavailable
-  if (!totalAmountObj) {
-    return null; // Don't render anything if data not ready
+  // In Shopify Preact extensions, shopify global is directly available
+  // Using a self-executing function to access it properly
+  if (typeof shopify === 'undefined') {
+    return <s-text>Loading checkout data...</s-text>;
   }
   
-  // Extract amount from Money object
-  // Note: Money object structure: { amount: "125.00", currencyCode: "USD" }
-  const amount = totalAmountObj.amount || '0.00';
+  // Safe data access with optional chaining
+  const lines = shopify?.lines?.value || [];
   
+  // Detect subscriptions using metafield-first strategy
+  const subscriptions = getCartSubscriptions(lines);
+  
+  // Render all messaging systems: thresholds, upsells, and subscription inclusions
   return (
-    <s-banner tone="info">
-      <s-heading>NUDUN Checkout Pro</s-heading>
-      <s-text>
-        Your cart contains {itemCount} {itemCount === 1 ? 'item' : 'items'} totaling ${amount}
-      </s-text>
-    </s-banner>
+    <s-stack direction="block">
+      {/* Phase 2A: Dynamic Threshold Messaging */}
+      <BannerQueue 
+        shopify={shopify} 
+        maxVisible={2}
+        allowDismiss={true}
+        persistDismissed={true}
+      />
+      
+      {/* Phase 2B: Strategic Upsells */}
+      <UpsellBanner shopify={shopify} />
+      
+      {/* Phase 1: Subscription Inclusion Messages */}
+      {subscriptions.length === 1 && (
+        <InclusionMessage subscription={subscriptions[0].subscription} />
+      )}
+      
+      {subscriptions.length > 1 && (
+        <MultiSubscriptionSummary subscriptions={subscriptions} />
+      )}
+    </s-stack>
   );
 }
