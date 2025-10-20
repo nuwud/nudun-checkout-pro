@@ -1,4 +1,4 @@
-# NUDUN Checkout Pro - AI Agent Guide
+﻿# NUDUN Checkout Pro - AI Agent Guide
 
 ## � Spec-Driven Development with Spec-Kit
 
