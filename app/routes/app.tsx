@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { HeadersFunction, LoaderFunctionArgs } from "react-router";
 import { Outlet, useLoaderData, useRouteError } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
@@ -17,10 +18,10 @@ export default function App() {
 
   return (
     <AppProvider embedded apiKey={apiKey}>
-      <s-app-nav>
+      <div style={appNavStyle}>
         <s-link href="/app">Home</s-link>
         <s-link href="/app/additional">Additional page</s-link>
-      </s-app-nav>
+      </div>
       <Outlet />
     </AppProvider>
   );
@@ -33,4 +34,12 @@ export function ErrorBoundary() {
 
 export const headers: HeadersFunction = (headersArgs) => {
   return boundary.headers(headersArgs);
+};
+
+const appNavStyle: CSSProperties = {
+  display: "flex",
+  gap: "1rem",
+  padding: "1rem 1.25rem",
+  borderBottom: "1px solid var(--p-color-border, #dfe3e8)",
+  background: "var(--p-color-bg-surface, #ffffff)",
 };

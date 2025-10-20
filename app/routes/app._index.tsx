@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import type { HeadersFunction, LoaderFunctionArgs } from "react-router";
 import { useFetcher, useLoaderData } from "react-router";
-import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 
 import type { ConfigAuditLog } from "@prisma/client";
@@ -123,6 +122,16 @@ const errorBannerStyle: CSSProperties = {
   borderRadius: "16px",
   border: "1px solid var(--p-color-border-critical, #de3618)",
   background: "var(--p-color-bg-critical-subdued, #fff4f0)",
+  padding: "1.25rem",
+  display: "flex",
+  flexDirection: "column",
+  gap: "0.5rem",
+};
+
+const successBannerStyle: CSSProperties = {
+  borderRadius: "16px",
+  border: "1px solid var(--p-color-border-success, #6f9b64)",
+  background: "var(--p-color-bg-success-subdued, #f1f8f0)",
   padding: "1.25rem",
   display: "flex",
   flexDirection: "column",
@@ -276,7 +285,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 export default function MessagingConsole() {
   const { config, audits } = useLoaderData<typeof loader>();
-  const toast = useAppBridge();
   const saveFetcher = useFetcher();
   const resetFetcher = useFetcher();
 
@@ -285,6 +293,7 @@ export default function MessagingConsole() {
   ]);
   const [formState, setFormState] = useState<FormState>(initialState);
   const [errors, setErrors] = useState<string[]>([]);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const isSaving = saveFetcher.state === "submitting";
   const isResetting = resetFetcher.state === "submitting";
 
@@ -303,25 +312,27 @@ export default function MessagingConsole() {
     }
 
     if (data.status === "ok") {
-      toast.toast.show("Messaging settings saved");
+      setSuccessMessage("Messaging settings saved");
       setFormState(mapConfigToForm(data.config));
       setErrors([]);
     } else if (data.status === "error") {
-      const fieldErrors = Object.values(data.errors.fieldErrors ?? {}).flat();
+      const rawErrors = Object.values(data.errors.fieldErrors ?? {}) as string[][];
+      const fieldErrors = rawErrors.flat();
       setErrors(fieldErrors.length ? fieldErrors : ["Unable to save settings"]);
+      setSuccessMessage(null);
     }
-  }, [saveFetcher.data, toast.toast]);
+  }, [saveFetcher.data]);
 
   useEffect(() => {
     const data = resetFetcher.data as
       | { status: "ok"; config: MessagingConfigResponse }
       | undefined;
     if (data?.status === "ok") {
-      toast.toast.show("Settings reset to defaults");
+      setSuccessMessage("Settings reset to defaults");
       setFormState(mapConfigToForm(data.config));
       setErrors([]);
     }
-  }, [resetFetcher.data, toast.toast]);
+  }, [resetFetcher.data]);
 
   const handleHeroChange = (field: keyof FormState["hero"], value: string) => {
     setFormState((prev) => ({
@@ -448,6 +459,7 @@ export default function MessagingConsole() {
 
     if (validationErrors.length) {
       setErrors(validationErrors);
+      setSuccessMessage(null);
       return;
     }
 
@@ -513,6 +525,12 @@ export default function MessagingConsole() {
           Last published: {formatTimestamp(config.lastPublishedAt)}
         </p>
       </div>
+
+      {successMessage && (
+        <div style={successBannerStyle}>
+          <strong>{successMessage}</strong>
+        </div>
+      )}
 
       {errors.length > 0 && (
         <div style={errorBannerStyle}>
@@ -901,7 +919,9 @@ function AuditLog({ audits }: { audits: ConfigAuditLog[] }) {
                 <strong>{audit.action}</strong> ·{" "}
                 {new Date(audit.createdAt).toLocaleString()} · {audit.actorShop}
               </div>
-              <div style={metaTextStyle}>Snapshot: {truncateDiff(audit.diff)}</div>
+              <div style={metaTextStyle}>
+                Snapshot: {truncateDiff(audit.diff)}
+              </div>
             </li>
           ))}
         </ul>
