@@ -296,3 +296,19 @@
 **I recommend**: Phase 2B (Upsells) - Natural next step, high impact, uses existing infrastructure.
 
 Let me know what you'd like to build next! 🚀
+
+---
+
+## 🚧 Phase 3: Admin Messaging Console (In Planning)
+
+### Kickoff & Setup (10%)
+- [x] ADM-T001: Install `zod` runtime dependency for shared validation (package.json, package-lock.json)
+- [x] ADM-T002: Record feature kickoff and pending phases in documentation
+- [ ] ADM-T003: Stakeholder sign-off on implementation plan and tasks
+
+**Deliverable**: Merchant-facing admin console enabling real-time control over messaging, upsells, thresholds, preview, and audit trail.
+
+**Next Actions**:
+- Establish Prisma schema and API scaffolding per plan (Foundational phase)
+- Execute User Story 1 (hero messaging control) for MVP
+- Coordinate localization review for new admin copy (`en`/`fr`)
