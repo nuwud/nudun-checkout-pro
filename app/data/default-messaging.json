@@ -1,0 +1,46 @@
+{
+  "shopDomain": "",
+  "currencyCode": "USD",
+  "hero": {
+    "headline": "You are close to a reward",
+    "body": "Spend {amount} more to unlock the next perk.",
+    "tone": "info"
+  },
+  "thresholds": [
+    {
+      "labelKey": "free_shipping",
+      "amountCents": 7500,
+      "tone": "success",
+      "message": {
+        "en": "You're eligible for complimentary shipping!",
+        "fr": "Vous avez droit à la livraison offerte !"
+      },
+      "priority": 0,
+      "isActive": true
+    },
+    {
+      "labelKey": "vip_gift",
+      "amountCents": 15000,
+      "tone": "highlight",
+      "message": {
+        "en": "Spend ${amount} to add a VIP gift to your order.",
+        "fr": "Dépensez {amount}$ pour ajouter un cadeau VIP à votre commande."
+      },
+      "priority": 1,
+      "isActive": true
+    }
+  ],
+  "upsell": {
+    "isEnabled": false,
+    "title": {
+      "en": "Upgrade for more perks",
+      "fr": "Passez à l'offre supérieure pour plus d'avantages"
+    },
+    "body": {
+      "en": "Switch to the annual plan and save up to 20% each year.",
+      "fr": "Passez au forfait annuel et économisez jusqu'à 20 % par an."
+    },
+    "targetProduct": null,
+    "discountCode": null
+  }
+}
