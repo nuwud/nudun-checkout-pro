@@ -1,0 +1,107 @@
+# GraphQL Contracts: Bonus Product Attachments
+
+# Shopify Admin Query: AttachmentProductPicker
+query AttachmentProductPicker($query: String!, $first: Int = 10) {
+  products(first: $first, query: $query) {
+    edges {
+      node {
+        id
+        title
+        media(first: 1) {
+          nodes {
+            ... on MediaImage {
+              id
+              image {
+                url
+                altText
+              }
+            }
+          }
+        }
+        variants(first: 25) {
+          edges {
+            node {
+              id
+              title
+              price
+              compareAtPrice
+              inventoryQuantity
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+# Nudun Admin GraphQL Schema (to implement in app backend)
+scalar JSON
+
+type Query {
+  """Fetch current bonus attachments for a messaging config."""
+  messagingBonusAttachments(configId: ID!): [MessagingBonusAttachment!]!
+}
+
+type Mutation {
+  """Create or update a bonus attachment for a messaging rule."""
+  messagingBonusAttachmentSave(
+    configId: ID!
+    input: MessagingBonusAttachmentInput!
+  ): MessagingBonusAttachmentPayload!
+
+  """Reset all attachments for a config back to seeded defaults."""
+  messagingBonusAttachmentReset(configId: ID!): MessagingBonusAttachmentResetPayload!
+}
+
+input MessagingBonusAttachmentInput {
+  ruleKey: MessagingBonusRuleKey!
+  productId: ID!
+  variantId: ID
+  quantity: Int!
+  valueSource: MessagingBonusValueSource!
+  customValueCents: Int
+  locales: JSON!
+  imageUrl: String
+}
+
+type MessagingBonusAttachmentPayload {
+  attachment: MessagingBonusAttachment!
+  userErrors: [MessagingBonusAttachmentError!]!
+}
+
+type MessagingBonusAttachmentResetPayload {
+  count: Int!
+  seededDefaults: Boolean!
+  userErrors: [MessagingBonusAttachmentError!]!
+}
+
+type MessagingBonusAttachmentError {
+  field: [String!]
+  message: String!
+  code: String
+}
+
+type MessagingBonusAttachment {
+  id: ID!
+  ruleKey: MessagingBonusRuleKey!
+  productId: ID!
+  variantId: ID
+  quantity: Int!
+  valueSource: MessagingBonusValueSource!
+  customValueCents: Int
+  locales: JSON!
+  imageUrl: String
+  updatedAt: String!
+}
+
+enum MessagingBonusRuleKey {
+  ANNUAL
+  QUARTERLY
+  HERO
+  UPSELL
+}
+
+enum MessagingBonusValueSource {
+  PRICE
+  CUSTOM
+}

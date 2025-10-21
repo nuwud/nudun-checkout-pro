@@ -11,6 +11,8 @@ import {
   listAuditEntries,
   type MessagingConfigResponse,
 } from "../services/messaging.server";
+import type { BonusAttachmentsByRule } from "../services/messaging-bonus.server";
+import type { BonusAttachmentInput } from "../utils/messaging-bonus.validation";
 import type { MessagingConfigInput } from "../utils/validation";
 
 type LoaderData = {
@@ -45,6 +47,7 @@ type FormState = {
     targetProduct: string;
     discountCode: string;
   };
+  bonusAttachments: BonusAttachmentsByRule;
 };
 
 const DEFAULT_TONE_OPTIONS = [
@@ -954,10 +957,13 @@ function mapConfigToForm(config: MessagingConfigResponse): FormState {
       targetProduct: config.upsell.targetProduct ?? "",
       discountCode: config.upsell.discountCode ?? "",
     },
+    bonusAttachments: { ...config.bonusAttachments },
   };
 }
 
 function mapFormToPayload(state: FormState): MessagingConfigInput {
+  const attachments = mapFormAttachmentsToPayload(state.bonusAttachments);
+
   return {
     hero: {
       headline: state.hero.headline.trim(),
@@ -980,7 +986,26 @@ function mapFormToPayload(state: FormState): MessagingConfigInput {
       targetProduct: state.upsell.targetProduct.trim() || null,
       discountCode: state.upsell.discountCode.trim() || null,
     },
+    bonusAttachments: attachments,
   };
+}
+
+function mapFormAttachmentsToPayload(
+  attachmentsByRule: BonusAttachmentsByRule,
+): BonusAttachmentInput[] {
+  return Object.values(attachmentsByRule ?? {})
+    .filter((attachment): attachment is NonNullable<typeof attachment> => Boolean(attachment))
+    .map((attachment) => ({
+      id: attachment.id,
+      ruleKey: attachment.ruleKey,
+      productId: attachment.productId,
+      variantId: attachment.variantId ?? undefined,
+      quantity: attachment.quantity,
+      valueSource: attachment.valueSource,
+      customValueCents: attachment.customValueCents ?? undefined,
+      locales: attachment.locales,
+      imageUrl: attachment.imageUrl ?? undefined,
+    }));
 }
 
 function sanitizeLocalizedCopy(copy: LocalizedCopy): LocalizedCopy {
@@ -1034,6 +1059,10 @@ function validateFormPayload(payload: MessagingConfigInput): string[] {
     if (Object.keys(payload.upsell.body).length === 0) {
       errors.push("Upsell body is required when enabled");
     }
+  }
+
+  if (payload.bonusAttachments && payload.bonusAttachments.length > 4) {
+    errors.push("Maximum of four bonus attachments supported in current release");
   }
 
   return errors;

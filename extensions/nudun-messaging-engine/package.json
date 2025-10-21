@@ -3,9 +3,18 @@
   "private": true,
   "version": "1.0.0",
   "license": "UNLICENSED",
+  "scripts": {
+    "test": "vitest",
+    "test:coverage": "vitest --coverage"
+  },
   "dependencies": {
     "preact": "^10.10.x",
     "@preact/signals": "^2.3.x",
     "@shopify/ui-extensions": "2025.10.x"
+  },
+  "devDependencies": {
+    "@testing-library/preact": "^3.2.3",
+    "jsdom": "^22.0.0",
+    "vitest": "^0.34.0"
   }
 }

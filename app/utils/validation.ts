@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { bonusAttachmentCollectionSchema } from "./messaging-bonus.validation";
+
 export const heroMessagingSchema = z.object({
   headline: z.string().min(1).max(255),
   body: z.string().min(1).max(2000),
@@ -28,6 +30,7 @@ export const messagingConfigSchema = z.object({
   currencyCode: z.string().min(3).max(8),
   thresholds: z.array(thresholdSchema).max(10),
   upsell: upsellSchema,
+  bonusAttachments: bonusAttachmentCollectionSchema.optional(),
 });
 
 export type MessagingConfigInput = z.infer<typeof messagingConfigSchema>;
