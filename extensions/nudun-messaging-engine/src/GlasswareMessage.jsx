@@ -2,6 +2,12 @@ import { useState, useEffect, useMemo } from 'preact/hooks';
 import { detectSubscription } from './utils/subscriptionDetection';
 import { getIncludedItemPrice } from './utils/includedItemLookup';
 
+/**
+ * @typedef {Object} ShopifyGlobal
+ * @property {{value: Array}} lines - Cart line items
+ * @global shopify
+ */
+
 export const formatPrice = (amount, currencyCode) => {
   if (!amount || !currencyCode) return null;
   return `$${amount} ${currencyCode}`;
@@ -20,7 +26,9 @@ export const getMessageContent = (glassCount, interval, priceFormatted) => {
   return { heading, description };
 };
 
+// eslint-disable-next-line react/prop-types
 export const GlasswareBanner = ({ glassCount, interval, priceFormatted }) => {
+  // eslint-disable-next-line react/prop-types
   const content = getMessageContent(glassCount, interval, priceFormatted);
   
   return (
@@ -32,13 +40,16 @@ export const GlasswareBanner = ({ glassCount, interval, priceFormatted }) => {
 };
 
 export default function GlasswareMessage({
+  // eslint-disable-next-line react/prop-types
   productHandle = 'premium-glass',
+  // eslint-disable-next-line react/prop-types
   hideIfNoSubscription = true
 } = {}) {
   const [glassPrice, setGlassPrice] = useState(null);
   
   const subscriptionLines = useMemo(() => {
-    const lines = shopify?.lines?.value || [];
+    // @ts-ignore - shopify.lines provided by Shopify checkout runtime
+    const lines = shopify.lines.value || [];
     return lines
       .map((line) => {
         if (!line || typeof line !== 'object') return null;
