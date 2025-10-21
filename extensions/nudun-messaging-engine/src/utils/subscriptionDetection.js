@@ -13,10 +13,14 @@
  */
 
 /**
+ * @typedef {'bold' | 'keyword' | null} SubscriptionProvider
+ * @typedef {'annual' | 'quarterly' | 'subscription' | null} SubscriptionInterval
  * @typedef {Object} SubscriptionDetectionResult
  * @property {boolean} isSubscription - True when subscription keywords are detected
  * @property {number} glassCount - Complimentary glass count based on subscription type
- * @property {('annual'|'quarterly'|'subscription'|null)} subscriptionType - Matched subscription keyword
+ * @property {'annual' | 'quarterly' | 'subscription'} interval - Matched subscription keyword
+ * @property {SubscriptionProvider} provider - Which provider detected this subscription
+ * @property {Record<string, unknown>} metadata - Provider-specific metadata
  */
 
 const DETECTION_ORDER = [
@@ -40,7 +44,9 @@ const DETECTION_ORDER = [
 const DEFAULT_RESULT = Object.freeze({
   isSubscription: false,
   glassCount: 0,
-  subscriptionType: null
+  interval: null,
+  provider: null,
+  metadata: {}
 });
 
 /**
@@ -54,10 +60,13 @@ function buildSearchText(lineItem) {
     return '';
   }
 
+  /** @type {Record<string, unknown>} */
+  const item = lineItem;
+
   const candidates = [
-    lineItem.title,
-    lineItem?.merchandise?.title,
-    lineItem?.merchandise?.product?.title
+    item.title,
+    item?.merchandise?.title,
+    item?.merchandise?.product?.title
   ];
 
   return candidates
@@ -91,7 +100,9 @@ export function detectSubscription(lineItem) {
       return {
         isSubscription: true,
         glassCount: definition.glassCount,
-        subscriptionType: definition.type
+        interval: definition.type,
+        provider: 'keyword',
+        metadata: {}
       };
     }
   }

@@ -1,112 +1,126 @@
 /**
- * Glass product lookup utility used to display complimentary glass value.
- * Fetches the glass product by handle via `shopify.query()` and caches
- * the first successful result to avoid repeated network calls per session.
+ * Subscription keyword detection dedicated to glassware messaging.
+ *
+ * Looks for subscription-related keywords in product and variant titles
+ * to determine whether a cart line includes complimentary glassware.
+ *
+ * Detection priority:
+ * 1. Annual subscriptions (4 glasses)
+ * 2. Quarterly subscriptions (1 glass)
+ * 3. Generic subscription keyword (1 glass)
+ *
+ * @module subscriptionDetection
  */
-
-const GLASS_PRODUCT_HANDLE = 'premium-glass';
-const DEFAULT_RESULT = Object.freeze({ price: null, found: false });
-
-let cachedResult = null;
-let inflightRequest = null;
 
 /**
- * Normalize a price node from Shopify GraphQL responses into the
- * `{ amount, currencyCode }` format expected by checkout UI surfaces.
- *
- * @param {unknown} priceNode - Candidate price node from Shopify GraphQL
- * @returns {{ amount: string, currencyCode: string } | null}
+ * @typedef {'bold' | 'keyword' | null} SubscriptionProvider
+ * @typedef {'annual' | 'quarterly' | 'subscription' | null} SubscriptionInterval
+ * @typedef {Object} SubscriptionDetectionResult
+ * @property {boolean} isSubscription - True when subscription keywords are detected
+ * @property {number} glassCount - Complimentary glass count based on subscription type
+ * @property {'annual' | 'quarterly' | 'subscription'} interval - Matched subscription keyword
+ * @property {SubscriptionProvider} provider - Which provider detected this subscription
+ * @property {Record<string, unknown>} metadata - Provider-specific metadata
  */
-function normalizePrice(priceNode) {
-  if (!priceNode || typeof priceNode !== 'object') {
-    return null;
+
+const DETECTION_ORDER = [
+  {
+    type: 'annual',
+    glassCount: 4,
+    patterns: [/\bannual\b/i, /\byearly\b/i, /\b12\s*-?\s*month\b/i]
+  },
+  {
+    type: 'quarterly',
+    glassCount: 1,
+    patterns: [/\bquarterly\b/i, /\b3\s*-?\s*month\b/i]
+  },
+  {
+    type: 'subscription',
+    glassCount: 1,
+    patterns: [/\bsubscription\b/i]
+  }
+];
+
+const DEFAULT_RESULT = Object.freeze({
+  isSubscription: false,
+  glassCount: 0,
+  interval: null,
+  provider: null,
+  metadata: {}
+});
+
+/**
+ * Extract searchable text from a Shopify cart line item.
+ *
+ * @param {unknown} lineItem - Shopify checkout line item
+ * @returns {string} Combined text from relevant title fields
+ */
+function buildSearchText(lineItem) {
+  if (!lineItem || typeof lineItem !== 'object') {
+    return '';
   }
 
-  const amount = priceNode.amount ?? priceNode.value ?? null;
-  const currencyCode = priceNode.currencyCode ?? priceNode.currency ?? null;
+  /** @type {Record<string, unknown>} */
+  const item = lineItem;
 
-  if (!amount || !currencyCode) {
-    return null;
-  }
+  const candidates = [
+    item.title,
+    item?.merchandise?.title,
+    item?.merchandise?.product?.title
+  ];
 
-  const normalizedAmount = typeof amount === 'number'
-    ? amount.toFixed(2)
-    : String(amount);
-
-  return {
-    amount: normalizedAmount,
-    currencyCode: String(currencyCode)
-  };
+  return candidates
+    .filter((value) => typeof value === 'string' && value.trim().length > 0)
+    .join(' ');
 }
 
 /**
- * Extract the first variant price from a product payload.
+ * Detect subscription keywords on a cart line item.
  *
- * @param {unknown} payload - Result of the glass product query
- * @returns {{ amount: string, currencyCode: string } | null}
- */
-function extractVariantPrice(payload) {
-  const product = payload?.product ?? payload?.productByHandle ?? null;
-
-  if (!product || typeof product !== 'object') {
-    return null;
-  }
-
-  const variantNodes = product?.variants?.nodes || product?.variants?.edges?.map((edge) => edge?.node) || [];
-  const firstVariant = Array.isArray(variantNodes) ? variantNodes.find(Boolean) : null;
-
-  const directPrice = normalizePrice(firstVariant?.price);
-  if (directPrice) {
-    return directPrice;
-  }
-
-  const priceV2 = normalizePrice(firstVariant?.priceV2);
-  if (priceV2) {
-    return priceV2;
-  }
-
-  const priceRange = normalizePrice(product?.priceRange?.minVariantPrice);
-  if (priceRange) {
-    return priceRange;
-  }
-
-  const priceRangeV2 = normalizePrice(product?.priceRangeV2?.minVariantPrice);
-  if (priceRangeV2) {
-    return priceRangeV2;
-  }
-
-  return null;
-}
-
-/**
- * Fetch the premium glass product price from Shopify.
- *
- * @returns {Promise<{ price: { amount: string, currencyCode: string } | null, found: boolean }>}
- *   Price information when found, otherwise `{ price: null, found: false }`
+ * @param {unknown} lineItem - Shopify checkout line item
+ * @returns {SubscriptionDetectionResult} Detection result with best-match priority
  *
  * @example
- * const { price, found } = await getGlassProductPrice();
- * if (found) {
- *   console.log(`Glass value: ${price.amount} ${price.currencyCode}`);
- * }
+ * const result = detectSubscription({ title: 'Annual Coffee Subscription' });
+ * // result => { isSubscription: true, glassCount: 4, subscriptionType: 'annual' }
+ *
+ * @example
+ * const result = detectSubscription({ merchandise: { title: 'Quarterly Blend' } });
+ * // result => { isSubscription: true, glassCount: 1, subscriptionType: 'quarterly' }
  */
-export async function getGlassProductPrice() {
-  if (cachedResult) {
-    return cachedResult;
+export function detectSubscription(lineItem) {
+  const haystack = buildSearchText(lineItem);
+
+  if (!haystack) {
+    return DEFAULT_RESULT;
   }
 
-  if (inflightRequest) {
-    return inflightRequest;
+  for (const definition of DETECTION_ORDER) {
+    if (definition.patterns.some((pattern) => pattern.test(haystack))) {
+      return {
+        isSubscription: true,
+        glassCount: definition.glassCount,
+        interval: definition.type,
+        provider: 'keyword',
+        metadata: {}
+      };
+    }
   }
 
-  if (typeof shopify === 'undefined' || typeof shopify?.query !== 'function') {
-    cachedResult = DEFAULT_RESULT;
-    return cachedResult;
-  }
+  return DEFAULT_RESULT;
+}
 
-  inflightRequest = (async () => {
+/**
+ * Safely expose detection helpers for tests.
+ *
+ * @internal
+ */
+export const _internals = {
+  DETECTION_ORDER,
+  buildSearchText
+};
     try {
-      const response = await shopify.query({
+      const response = await shopifyAPI.query({
         data: {
           query: `#graphql
             query GlassProductPrice($handle: String!) {
