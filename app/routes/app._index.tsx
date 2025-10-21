@@ -512,6 +512,42 @@ export default function MessagingConsole() {
     });
   };
 
+  const handleSubscriptionDealChange = (dealId: string, update: Partial<SubscriptionDeal>) => {
+    setFormState((prev) => ({
+      ...prev,
+      subscriptionDeals: prev.subscriptionDeals.map((deal) =>
+        deal.id === dealId ? { ...deal, ...update } : deal
+      ),
+    }));
+  };
+
+  const addSubscriptionDeal = () => {
+    setFormState((prev) => ({
+      ...prev,
+      subscriptionDeals: [
+        ...prev.subscriptionDeals,
+        {
+          id: createClientId(),
+          productHandle: "",
+          productTitle: "",
+          includedProductHandle: "glass",
+          includedProductTitle: "Glass",
+          quantity: 1,
+          unitValue: "20.00",
+          discountType: "complimentary",
+          message: { en: "", fr: "" },
+        },
+      ],
+    }));
+  };
+
+  const removeSubscriptionDeal = (dealId: string) => {
+    setFormState((prev) => ({
+      ...prev,
+      subscriptionDeals: prev.subscriptionDeals.filter((deal) => deal.id !== dealId),
+    }));
+  };
+
   return (
     <div style={pageContainerStyle}>
       <div style={pageHeaderStyle}>
@@ -616,6 +652,13 @@ export default function MessagingConsole() {
           formState={formState}
           onChange={handleUpsellChange}
           onCopyChange={handleUpsellCopyChange}
+        />
+
+        <SubscriptionDealsCard
+          formState={formState}
+          onChange={handleSubscriptionDealChange}
+          onAdd={addSubscriptionDeal}
+          onRemove={removeSubscriptionDeal}
         />
 
         <AuditLog audits={audits} />
@@ -934,6 +977,308 @@ function UpsellCard({
             placeholder="Optional"
           />
         </label>
+      </div>
+    </div>
+  );
+}
+
+function SubscriptionDealsCard({
+  formState,
+  onChange,
+  onAdd,
+  onRemove,
+}: {
+  formState: FormState;
+  onChange: (dealId: string, update: Partial<SubscriptionDeal>) => void;
+  onAdd: () => void;
+  onRemove: (dealId: string) => void;
+}) {
+  // Mock subscription products - in real app these come from Shopify API
+  const subscriptionProducts = [
+    { handle: "annual-subscription", title: "Annual Subscription" },
+    { handle: "quarterly-subscription", title: "Quarterly Subscription" },
+    { handle: "monthly-subscription", title: "Monthly Subscription" },
+  ];
+
+  const [editingDealId, setEditingDealId] = useState<string | null>(null);
+
+  return (
+    <div style={cardStyle}>
+      <h2 style={cardHeadingStyle}>Subscription Deals</h2>
+      <p style={helpTextStyle}>
+        Configure what products are included with each subscription. Customers will see the deal message in checkout.
+      </p>
+
+      <div style={{ display: "grid", gap: "1rem" }}>
+        {/* Deals List */}
+        {formState.subscriptionDeals.length === 0 ? (
+          <div style={{ padding: "1rem", backgroundColor: "var(--p-color-bg-surface-secondary, #f9fafb)", borderRadius: "0.75rem", textAlign: "center" }}>
+            <p style={metaTextStyle}>No subscription deals configured yet.</p>
+          </div>
+        ) : (
+          formState.subscriptionDeals.map((deal) => (
+            <div key={deal.id} style={subCardStyle}>
+              {editingDealId === deal.id ? (
+                <DealEditor
+                  deal={deal}
+                  subscriptionProducts={subscriptionProducts}
+                  onChange={(update) => onChange(deal.id, update)}
+                  onSave={() => setEditingDealId(null)}
+                  onCancel={() => setEditingDealId(null)}
+                />
+              ) : (
+                <div style={{ display: "grid", gap: "0.75rem" }}>
+                  {/* Deal Summary */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", alignItems: "start" }}>
+                    <div>
+                      <p style={{ ...metaTextStyle, marginBottom: "0.25rem" }}>Subscription Product</p>
+                      <p style={{ margin: 0, fontWeight: 600 }}>{deal.productTitle || "Not selected"}</p>
+                    </div>
+                    <div>
+                      <p style={{ ...metaTextStyle, marginBottom: "0.25rem" }}>Included Product</p>
+                      <p style={{ margin: 0, fontWeight: 600 }}>
+                        🥃 {deal.quantity} × {deal.includedProductTitle}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Deal Terms */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                    <div>
+                      <p style={{ ...metaTextStyle, marginBottom: "0.25rem" }}>Discount Type</p>
+                      <p style={{ margin: 0, fontWeight: 600, fontSize: "0.9rem" }}>
+                        {deal.discountType === "complimentary" ? "✓ Complimentary" : `${deal.discountValue}% Off`}
+                      </p>
+                    </div>
+                    <div>
+                      <p style={{ ...metaTextStyle, marginBottom: "0.25rem" }}>Unit Value</p>
+                      <p style={{ margin: 0, fontWeight: 600 }}>${deal.unitValue}</p>
+                    </div>
+                  </div>
+
+                  {/* Message Preview */}
+                  <div style={{ padding: "0.75rem", backgroundColor: "#e6f2ed", borderRadius: "0.5rem", borderLeft: "4px solid #137752" }}>
+                    <p style={{ margin: 0, fontSize: "0.9rem", fontWeight: 600 }}>
+                      🥃 {deal.quantity} {deal.includedProductTitle} Included
+                    </p>
+                    <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.85rem" }}>
+                      {deal.message.en || "(No message configured)"}
+                    </p>
+                  </div>
+
+                  {/* Actions */}
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <button
+                      type="button"
+                      style={{
+                        ...secondaryButtonStyle,
+                        flex: 1,
+                        padding: "0.5rem 0.75rem",
+                        fontSize: "0.9rem",
+                      }}
+                      onClick={() => setEditingDealId(deal.id)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      style={{
+                        ...dangerButtonStyle,
+                        padding: "0.5rem 0.75rem",
+                        fontSize: "0.9rem",
+                      }}
+                      onClick={() => onRemove(deal.id)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))
+        )}
+
+        {/* Add Button */}
+        <button
+          type="button"
+          style={{
+            ...secondaryButtonStyle,
+            padding: "0.75rem 1rem",
+            fontWeight: 600,
+            width: "100%",
+          }}
+          onClick={onAdd}
+        >
+          + Add subscription deal
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function DealEditor({
+  deal,
+  subscriptionProducts,
+  onChange,
+  onSave,
+  onCancel,
+}: {
+  deal: SubscriptionDeal;
+  subscriptionProducts: Array<{ handle: string; title: string }>;
+  onChange: (update: Partial<SubscriptionDeal>) => void;
+  onSave: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div style={{ display: "grid", gap: "1rem", padding: "1rem", backgroundColor: "var(--p-color-bg-surface, #ffffff)", borderRadius: "0.75rem", border: "1px solid var(--p-color-border, #dfe3e8)" }}>
+      <h3 style={subHeadingStyle}>Edit Subscription Deal</h3>
+
+      {/* Subscription Product Selector */}
+      <label style={labelStyle}>
+        Subscription Product
+        <select
+          style={inputStyle}
+          value={deal.productHandle}
+          onChange={(e) => {
+            const product = subscriptionProducts.find((p) => p.handle === e.currentTarget.value);
+            if (product) {
+              onChange({ productHandle: product.handle, productTitle: product.title });
+            }
+          }}
+        >
+          <option value="">-- Select subscription --</option>
+          {subscriptionProducts.map((product) => (
+            <option key={product.handle} value={product.handle}>
+              {product.title}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      {/* Included Product Configuration */}
+      <div style={twoColumnStyle}>
+        <label style={labelStyle}>
+          Included Product Title
+          <input
+            style={inputStyle}
+            type="text"
+            value={deal.includedProductTitle}
+            onChange={(e) => onChange({ includedProductTitle: e.currentTarget.value })}
+            placeholder="e.g., Glass"
+          />
+        </label>
+        <label style={labelStyle}>
+          Quantity
+          <input
+            style={inputStyle}
+            type="number"
+            min="1"
+            max="100"
+            value={deal.quantity}
+            onChange={(e) => onChange({ quantity: parseInt(e.currentTarget.value) || 1 })}
+          />
+        </label>
+      </div>
+
+      {/* Discount Configuration */}
+      <div style={twoColumnStyle}>
+        <label style={labelStyle}>
+          Discount Type
+          <select
+            style={inputStyle}
+            value={deal.discountType}
+            onChange={(e) => onChange({ discountType: e.currentTarget.value as "complimentary" | "percentage" })}
+          >
+            <option value="complimentary">Complimentary (Free)</option>
+            <option value="percentage">Percentage Discount</option>
+          </select>
+        </label>
+        <label style={labelStyle}>
+          Unit Value ($)
+          <input
+            style={inputStyle}
+            type="text"
+            value={deal.unitValue}
+            onChange={(e) => onChange({ unitValue: e.currentTarget.value })}
+            placeholder="e.g., 20.00"
+          />
+        </label>
+      </div>
+
+      {deal.discountType === "percentage" && (
+        <label style={labelStyle}>
+          Discount Percentage (%)
+          <input
+            style={inputStyle}
+            type="number"
+            min="0"
+            max="100"
+            value={deal.discountValue || ""}
+            onChange={(e) => onChange({ discountValue: e.currentTarget.value })}
+            placeholder="e.g., 20"
+          />
+        </label>
+      )}
+
+      {/* Message Configuration */}
+      <div style={twoColumnStyle}>
+        <label style={labelStyle}>
+          Message (English)
+          <textarea
+            style={textareaStyle}
+            value={deal.message.en || ""}
+            rows={3}
+            onChange={(e) => onChange({ message: { ...deal.message, en: e.currentTarget.value } })}
+            placeholder="e.g., Complimentary glasses included with your subscription • Value: $80"
+          />
+        </label>
+        <label style={labelStyle}>
+          Message (French)
+          <textarea
+            style={textareaStyle}
+            value={deal.message.fr || ""}
+            rows={3}
+            onChange={(e) => onChange({ message: { ...deal.message, fr: e.currentTarget.value } })}
+            placeholder="e.g., Verres gratuits inclus avec votre abonnement • Valeur: 80 $"
+          />
+        </label>
+      </div>
+
+      {/* Message Preview */}
+      <div style={{ padding: "1rem", backgroundColor: "#e6f2ed", borderRadius: "0.75rem", borderLeft: "4px solid #137752" }}>
+        <p style={{ margin: 0, fontWeight: 600, fontSize: "0.95rem", marginBottom: "0.5rem" }}>Preview</p>
+        <div style={{ padding: "0.75rem", backgroundColor: "rgba(255,255,255,0.5)", borderRadius: "0.5rem", fontSize: "0.9rem" }}>
+          <strong>🥃 {deal.quantity} {deal.includedProductTitle} Included</strong>
+          <p style={{ margin: "0.5rem 0 0 0", fontSize: "0.85rem" }}>
+            {deal.message.en || "(No message configured)"}
+          </p>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div style={{ display: "flex", gap: "0.5rem" }}>
+        <button
+          type="button"
+          style={{
+            ...primaryActionStyle,
+            flex: 1,
+            padding: "0.6rem",
+          }}
+          onClick={onSave}
+        >
+          Save
+        </button>
+        <button
+          type="button"
+          style={{
+            ...secondaryButtonStyle,
+            flex: 1,
+            padding: "0.6rem",
+          }}
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
       </div>
     </div>
   );
