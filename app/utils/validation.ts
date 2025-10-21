@@ -26,10 +26,16 @@ export const upsellSchema = z.object({
 });
 
 export const glasswatesSchema = z.object({
-  selectedProductHandle: z.string().min(1).max(255),
-  selectedProductImage: z.string().optional(),
-  selectedProductTitle: z.string().optional(),
-  selectedProductPrice: z.string().optional(),
+  id: z.string(),
+  productHandle: z.string().min(1),
+  productTitle: z.string().min(1),
+  includedProductHandle: z.string().min(1),
+  includedProductTitle: z.string().min(1),
+  quantity: z.number().int().positive(),
+  unitValue: z.string().min(1),
+  discountType: z.enum(["complimentary", "percentage"]),
+  discountValue: z.string().optional(),
+  message: z.record(z.string().min(1), z.string().min(1).max(500)),
 });
 
 export const messagingConfigSchema = z.object({
@@ -38,7 +44,7 @@ export const messagingConfigSchema = z.object({
   thresholds: z.array(thresholdSchema).max(10),
   upsell: upsellSchema,
   bonusAttachments: bonusAttachmentCollectionSchema.optional(),
-  glasswares: glasswatesSchema.optional(),
+  subscriptionDeals: z.array(glasswatesSchema).optional(),
 });
 
 export type MessagingConfigInput = z.infer<typeof messagingConfigSchema>;
