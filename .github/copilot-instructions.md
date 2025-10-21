@@ -30,6 +30,7 @@ This project uses [GitHub Spec-Kit](https://github.com/github/spec-kit) for stru
 2. ✅ **Environment**: Store = nudun-dev-store | App ID = 286617272321 | Extension placed in editor
 3. ✅ **Pattern**: Import from `'@shopify/ui-extensions/preact'` → Use `render()` → JSX syntax
 4. ✅ **Data Structures**: Money objects have `.amount` and `.currencyCode` properties (NOT plain numbers)
+5. ✅ **Reference**: See `docs/SHOPIFY-API-CONTRACT-2025-10.md` for complete API contract and what properties actually exist
 
 ### Current Extension API (2025-10):
 ```jsx
