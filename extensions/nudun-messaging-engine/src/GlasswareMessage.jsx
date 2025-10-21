@@ -1,6 +1,19 @@
 import { useState, useEffect, useMemo } from 'preact/hooks';
 import { detectSubscription } from './utils/subscriptionDetection';
-import { getIncludedItemPrice } from './utils/includedItemLookup';
+
+/**
+ * @typedef {Object} SubscriptionDeal
+ * @property {string} id - Deal ID
+ * @property {string} productHandle - Subscription product handle
+ * @property {string} productTitle - Subscription product title
+ * @property {string} includedProductHandle - What product is included
+ * @property {string} includedProductTitle - Title of included product
+ * @property {number} quantity - How many units included
+ * @property {string} unitValue - Price per unit
+ * @property {"complimentary"|"percentage"} discountType - Discount type
+ * @property {string} [discountValue] - Discount percentage (if applicable)
+ * @property {Record<string, string>} message - Localized messages (en, fr)
+ */
 
 /**
  * @typedef {Object} ShopifyGlobal
@@ -15,7 +28,7 @@ export const formatPrice = (amount, currencyCode) => {
 
 export const getMessageContent = (glassCount, interval, priceFormatted) => {
   const glassLabel = glassCount === 1 ? 'Glass' : 'Glasses';
-  const heading = `ï¿½ï¿½ï¿½ ${glassCount} Premium ${glassLabel} Included`;
+  const heading = `íµƒ ${glassCount} Premium ${glassLabel} Included`;
   
   let description = `Complimentary ${glassLabel.toLowerCase()} included with your ${interval} subscription`;
   
@@ -39,13 +52,50 @@ export const GlasswareBanner = ({ glassCount, interval, priceFormatted }) => {
   );
 };
 
+/**
+ * Fetch subscription deals configuration from the app
+ * @returns {Promise<Array<SubscriptionDeal>|null>}
+ */
+async function fetchSubscriptionDeals() {
+  try {
+    const response = await fetch('/api/messaging-settings', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (!response.ok) return null;
+    
+    const data = await response.json();
+    return data?.subscriptionDeals || [];
+  } catch (error) {
+    console.error('Failed to fetch subscription deals:', error);
+    return null;
+  }
+}
+
+/**
+ * Find the deal that matches a detected subscription
+ * @param {Array<SubscriptionDeal>} deals
+ * @param {string} productHandle - Subscription product handle
+ * @returns {SubscriptionDeal|null}
+ */
+function findMatchingDeal(deals, productHandle) {
+  if (!deals || deals.length === 0) return null;
+  return deals.find((deal) => deal.productHandle === productHandle) || null;
+}
+
 export default function GlasswareMessage({
-  // eslint-disable-next-line react/prop-types
-  productHandle = 'premium-glass',
   // eslint-disable-next-line react/prop-types
   hideIfNoSubscription = true
 } = {}) {
-  const [glassPrice, setGlassPrice] = useState(null);
+  const [subscriptionDeals, setSubscriptionDeals] = useState(null);
+  
+  // Fetch subscription deals on mount
+  useEffect(() => {
+    (async () => {
+      const deals = await fetchSubscriptionDeals();
+      setSubscriptionDeals(deals || []);
+    })();
+  }, []);
   
   const subscriptionLines = useMemo(() => {
     // @ts-ignore - shopify.lines provided by Shopify checkout runtime
@@ -55,48 +105,52 @@ export default function GlasswareMessage({
         if (!line || typeof line !== 'object') return null;
         const detection = detectSubscription(line);
         if (!detection.isSubscription) return null;
-        return detection; // Only return the detection result (glassCount, interval, isSubscription)
+        
+        // Enrich detection with product handle if available
+        return {
+          ...detection,
+          productHandle: line.merchandise?.product?.handle || null
+        };
       })
       .filter(Boolean);
   }, []);
   
   const hasSubscriptions = subscriptionLines.length > 0;
   
-  useEffect(() => {
-    if (!hasSubscriptions) return;
-    
-    (async () => {
-      try {
-        const result = await getIncludedItemPrice(productHandle);
-        if (result?.price) {
-          setGlassPrice(result.price);
-        }
-      } catch (error) {
-        console.error('Failed to fetch glass product price:', error);
-      }
-    })();
-  }, [productHandle, hasSubscriptions]);
-  
   if (!hasSubscriptions && hideIfNoSubscription) {
     return null;
   }
   
-  if (!hasSubscriptions) {
+  if (!hasSubscriptions || !subscriptionDeals || subscriptionDeals.length === 0) {
     return null;
   }
   
-  const priceFormatted = glassPrice ? formatPrice(glassPrice.amount, glassPrice.currencyCode) : null;
+  // Get locale from shopify global if available
+  const locale = shopify?.localization?.value?.isoCode?.toLowerCase() || 'en';
   
   return (
     <s-stack direction="block">
-      {subscriptionLines.map((sub, idx) => (
-        <GlasswareBanner
-          key={idx}
-          glassCount={sub.glassCount}
-          interval={sub.interval}
-          priceFormatted={priceFormatted}
-        />
-      ))}
+      {subscriptionLines.map((sub, idx) => {
+        // Find the deal that matches this subscription
+        const deal = findMatchingDeal(subscriptionDeals, sub.productHandle);
+        
+        if (!deal) {
+          // No deal configured for this subscription type
+          return null;
+        }
+        
+        // Get the message in the appropriate locale
+        const message = deal.message?.[locale] || deal.message?.en || '';
+        
+        return (
+          <s-banner key={idx} tone="success">
+            <s-heading>
+              íµƒ {deal.quantity} {deal.includedProductTitle} Included
+            </s-heading>
+            <s-text>{message || `${deal.quantity} ${deal.includedProductTitle} included with your subscription`}</s-text>
+          </s-banner>
+        );
+      })}
     </s-stack>
   );
 }
@@ -104,5 +158,7 @@ export default function GlasswareMessage({
 export const _internals = {
   formatPrice,
   getMessageContent,
-  GlasswareBanner
+  GlasswareBanner,
+  fetchSubscriptionDeals,
+  findMatchingDeal
 };
