@@ -66,8 +66,12 @@ export default function AnalyticsDashboard() {
           {mockData.commonSubscriptions.map((sub) => (
             <div key={sub.type} style={subscriptionCardStyle}>
               <div style={subscriptionHeaderStyle}>
-                <s-text style={subscriptionLabelStyle}>{sub.type}</s-text>
-                <s-text style={subscriptionCountStyle}>{sub.count}</s-text>
+                <div style={subscriptionLabelStyle}>
+                  <s-text>{sub.type}</s-text>
+                </div>
+                <div style={subscriptionCountStyle}>
+                  <s-text>{sub.count}</s-text>
+                </div>
               </div>
               <div style={progressBarContainerStyle}>
                 <div
@@ -78,7 +82,9 @@ export default function AnalyticsDashboard() {
                   }}
                 />
               </div>
-              <s-text style={subscriptionPercentStyle}>{sub.percentage}% of total</s-text>
+              <div style={subscriptionPercentStyle}>
+                <s-text>{sub.percentage}% of total</s-text>
+              </div>
             </div>
           ))}
         </div>
@@ -90,10 +96,14 @@ export default function AnalyticsDashboard() {
           {mockData.recentActivity.map((activity, index) => (
             <div key={index} style={activityItemStyle}>
               <div style={activityLeftStyle}>
-                <s-text style={activityLabelStyle}>{activity.action}</s-text>
-                <s-text style={activityTimestampStyle}>{activity.timestamp}</s-text>
+                <div style={activityLabelStyle}>
+                  <s-text>{activity.action}</s-text>
+                </div>
+                <div style={activityTimestampStyle}>
+                  <s-text>{activity.timestamp}</s-text>
+                </div>
               </div>
-              <s-badge status={getActivityBadgeStatus(activity.type)}>
+              <s-badge tone={getActivityBadgeStatus(activity.type)}>
                 {activity.type.toUpperCase()}
               </s-badge>
             </div>
@@ -149,9 +159,17 @@ function MetricCard({
   return (
     <div style={metricCardStyle}>
       <div style={metricIconStyle}>{icon}</div>
-      <s-text style={metricLabelStyle}>{label}</s-text>
-      <s-text style={metricValueStyle}>{value}</s-text>
-      {trend && <s-text style={metricTrendStyle(highlight)}>{trend}</s-text>}
+      <div style={metricLabelStyle}>
+        <s-text>{label}</s-text>
+      </div>
+      <div style={metricValueStyle}>
+        <s-text>{value}</s-text>
+      </div>
+      {trend && (
+        <div style={metricTrendStyle(highlight)}>
+          <s-text>{trend}</s-text>
+        </div>
+      )}
     </div>
   );
 }

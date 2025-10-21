@@ -19,12 +19,12 @@ export default function App() {
   return (
     <AppProvider embedded apiKey={apiKey}>
       <div style={appNavStyle}>
-        <s-link href="/app" style={navLinkStyle}>
-          🏠 Home
-        </s-link>
-        <s-link href="/app/additional" style={navLinkStyle}>
-          📊 Analytics
-        </s-link>
+        <div style={navLinkStyle}>
+          <s-link href="/app">🏠 Home</s-link>
+        </div>
+        <div style={navLinkStyle}>
+          <s-link href="/app/additional">📊 Analytics</s-link>
+        </div>
       </div>
       <Outlet />
     </AppProvider>
