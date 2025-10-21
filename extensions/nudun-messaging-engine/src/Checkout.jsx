@@ -5,6 +5,7 @@ import { getCartSubscriptions } from './utils/subscriptionDetector.js';
 import { InclusionMessage, MultiSubscriptionSummary } from './components/InclusionMessage.jsx';
 import BannerQueue from './components/BannerQueue.jsx';
 import UpsellBanner from './components/UpsellBanner.jsx';
+import GlasswareMessage from './GlasswareMessage.jsx';
 
 /**
  * NUDUN Checkout Pro Extension - v3.0
@@ -41,6 +42,9 @@ function Extension() {
   // Render all messaging systems: thresholds, upsells, and subscription inclusions
   return (
     <s-stack direction="block">
+      {/* Phase 3: Glassware Inclusion Messages */}
+      <GlasswareMessage productHandle="premium-glass" />
+      
       {/* Phase 2A: Dynamic Threshold Messaging */}
       <BannerQueue 
         shopify={shopify} 
