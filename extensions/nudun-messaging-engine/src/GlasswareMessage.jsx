@@ -55,10 +55,7 @@ export default function GlasswareMessage({
         if (!line || typeof line !== 'object') return null;
         const detection = detectSubscription(line);
         if (!detection.isSubscription) return null;
-        return {
-          ...detection,
-          productTitle: line?.title || line?.merchandise?.title || line?.merchandise?.product?.title || 'Product'
-        };
+        return detection; // Only return the detection result (glassCount, interval, isSubscription)
       })
       .filter(Boolean);
   }, []);

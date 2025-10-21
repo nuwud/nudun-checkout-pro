@@ -31,6 +31,12 @@ declare module './src/components/UpsellBanner.jsx' {
 }
 
 //@ts-ignore
+declare module './src/GlasswareMessage.jsx' {
+  const shopify: import('@shopify/ui-extensions/purchase.checkout.block.render').Api;
+  const globalThis: { shopify: typeof shopify };
+}
+
+//@ts-ignore
 declare module './src/utils/metafieldParser.js' {
   const shopify: import('@shopify/ui-extensions/purchase.checkout.block.render').Api;
   const globalThis: { shopify: typeof shopify };
@@ -74,6 +80,18 @@ declare module './src/config/upsellTemplates.js' {
 
 //@ts-ignore
 declare module './src/config/merchantSettings.js' {
+  const shopify: import('@shopify/ui-extensions/purchase.checkout.block.render').Api;
+  const globalThis: { shopify: typeof shopify };
+}
+
+//@ts-ignore
+declare module './src/utils/subscriptionDetection.js' {
+  const shopify: import('@shopify/ui-extensions/purchase.checkout.block.render').Api;
+  const globalThis: { shopify: typeof shopify };
+}
+
+//@ts-ignore
+declare module './src/utils/includedItemLookup.js' {
   const shopify: import('@shopify/ui-extensions/purchase.checkout.block.render').Api;
   const globalThis: { shopify: typeof shopify };
 }
