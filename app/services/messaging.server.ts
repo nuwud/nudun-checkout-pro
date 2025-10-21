@@ -8,6 +8,13 @@ import {
   messagingConfigSchema,
   type MessagingConfigInput,
 } from "../utils/validation";
+import { bonusAttachmentSchema } from "../utils/messaging-bonus.validation";
+import {
+  getBonusAttachmentsByConfigId,
+  loadDefaultBonusAttachments,
+  replaceBonusAttachments,
+  type BonusAttachmentsByRule,
+} from "./messaging-bonus.server";
 
 const DEFAULT_CONFIG_PATH = join(
   process.cwd(),
@@ -22,8 +29,9 @@ type TransactionClient = Prisma.TransactionClient;
 
 type AuditAction = "UPDATE" | "RESET";
 
-export type MessagingConfigResponse = MessagingConfigInput & {
+export type MessagingConfigResponse = Omit<MessagingConfigInput, "bonusAttachments"> & {
   lastPublishedAt: Date | null;
+  bonusAttachments: BonusAttachmentsByRule;
 };
 
 export async function getMessagingConfig(
@@ -47,6 +55,7 @@ export async function getMessagingConfig(
     return {
       ...defaults,
       lastPublishedAt: null,
+      bonusAttachments: {},
     };
   }
 
@@ -78,6 +87,8 @@ export async function getMessagingConfig(
       }
     : (await ensureDefaults()).upsell;
 
+  const bonusAttachments = await getBonusAttachmentsByConfigId(config.id);
+
   return {
     hero: {
       headline: config.heroHeadline,
@@ -88,6 +99,7 @@ export async function getMessagingConfig(
     thresholds,
     upsell,
     lastPublishedAt: config.lastPublishedAt,
+    bonusAttachments,
   };
 }
 
@@ -103,6 +115,16 @@ export async function upsertMessagingConfig(
 
     await replaceThresholds(tx, config.id, payload.thresholds);
     await replaceUpsellSettings(tx, config.id, payload.upsell);
+
+    if (payload.bonusAttachments !== undefined) {
+      const normalized = payload.bonusAttachments.map((attachment) =>
+        bonusAttachmentSchema.parse(attachment),
+      );
+      await replaceBonusAttachments(config.id, normalized, {
+        updatedBy: shopDomain,
+        tx,
+      });
+    }
 
     await logAuditEntry(tx, config.id, shopDomain, "UPDATE", payload);
   });
@@ -123,6 +145,11 @@ export async function resetMessagingConfig(
 
     await replaceThresholds(tx, config.id, defaults.thresholds);
     await replaceUpsellSettings(tx, config.id, defaults.upsell);
+    const defaultAttachments = loadDefaultBonusAttachments();
+    await replaceBonusAttachments(config.id, defaultAttachments, {
+      updatedBy: shopDomain,
+      tx,
+    });
 
     await logAuditEntry(tx, config.id, shopDomain, "RESET", defaults);
   });
