@@ -62,6 +62,11 @@ const pageContainerStyle: CSSProperties = {
   display: "flex",
   flexDirection: "column",
   gap: "1.5rem",
+  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+  color: "#000000",
+  maxWidth: "1400px",
+  margin: "0 auto",
+  padding: "1.5rem",
 };
 
 const pageHeaderStyle: CSSProperties = {
@@ -76,6 +81,8 @@ const pageTitleStyle: CSSProperties = {
   fontSize: "1.75rem",
   fontWeight: 600,
   margin: 0,
+  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+  letterSpacing: "-0.02em",
 };
 
 const actionBarStyle: CSSProperties = {
@@ -87,11 +94,14 @@ const actionBarStyle: CSSProperties = {
 const primaryActionStyle: CSSProperties = {
   padding: "0.6rem 1.4rem",
   borderRadius: "0.75rem",
-  border: "1px solid transparent",
   background: "var(--p-color-bg-fill-primary, #008060)",
   color: "var(--p-color-text-on-primary, #ffffff)",
   fontWeight: 600,
   cursor: "pointer",
+  fontSize: "0.95rem",
+  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+  transition: "all 0.2s ease",
+  border: "none",
 };
 
 const criticalActionStyle: CSSProperties = {
@@ -149,6 +159,7 @@ const cardStyle: CSSProperties = {
   display: "flex",
   flexDirection: "column",
   gap: "0.75rem",
+  boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
 };
 
 const subCardStyle: CSSProperties = {
@@ -165,6 +176,7 @@ const cardHeadingStyle: CSSProperties = {
   fontSize: "1.1rem",
   fontWeight: 600,
   margin: 0,
+  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
 };
 
 const subHeadingStyle: CSSProperties = {
@@ -177,6 +189,7 @@ const helpTextStyle: CSSProperties = {
   margin: 0,
   color: "var(--p-color-text-secondary, #5c5f62)",
   fontSize: "0.95rem",
+  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
 };
 
 const labelStyle: CSSProperties = {
@@ -185,6 +198,7 @@ const labelStyle: CSSProperties = {
   gap: "0.35rem",
   fontWeight: 500,
   fontSize: "0.93rem",
+  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
 };
 
 const checkboxLabelStyle: CSSProperties = {
@@ -200,6 +214,8 @@ const inputStyle: CSSProperties = {
   borderRadius: "0.75rem",
   border: "1px solid var(--p-color-border, #dfe3e8)",
   fontSize: "0.95rem",
+  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+  transition: "border-color 0.2s ease",
 };
 
 const textareaStyle: CSSProperties = {
