@@ -60,13 +60,14 @@ function buildSearchText(lineItem) {
     return '';
   }
 
-  /** @type {Record<string, unknown>} */
-  const item = lineItem;
+  const item = /** @type {Record<string, unknown>} */ (lineItem);
+  const merchandise = /** @type {Record<string, unknown>} */ (item?.merchandise ?? {});
+  const product = /** @type {Record<string, unknown>} */ (merchandise?.product ?? {});
 
   const candidates = [
     item.title,
-    item?.merchandise?.title,
-    item?.merchandise?.product?.title
+    merchandise.title,
+    product.title
   ];
 
   return candidates
@@ -100,7 +101,7 @@ export function detectSubscription(lineItem) {
       return {
         isSubscription: true,
         glassCount: definition.glassCount,
-        interval: definition.type,
+        interval: /** @type {SubscriptionInterval} */ (definition.type),
         provider: 'keyword',
         metadata: {}
       };
