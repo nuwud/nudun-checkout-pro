@@ -8,7 +8,9 @@ describe('subscriptionDetection', () => {
     expect(detectSubscription(null)).toEqual({
       isSubscription: false,
       glassCount: 0,
-      subscriptionType: null
+      interval: null,
+      provider: null,
+      metadata: {}
     });
   });
 
@@ -17,7 +19,9 @@ describe('subscriptionDetection', () => {
     expect(result).toEqual({
       isSubscription: false,
       glassCount: 0,
-      subscriptionType: null
+      interval: null,
+      provider: null,
+      metadata: {}
     });
   });
 
@@ -30,7 +34,9 @@ describe('subscriptionDetection', () => {
       expect(result).toEqual({
         isSubscription: true,
         glassCount: 1,
-        subscriptionType: 'quarterly'
+        interval: 'quarterly',
+        provider: 'keyword',
+        metadata: {}
       });
     }
   });
@@ -43,7 +49,9 @@ describe('subscriptionDetection', () => {
     expect(result).toEqual({
       isSubscription: true,
       glassCount: 1,
-      subscriptionType: 'quarterly'
+      interval: 'quarterly',
+      provider: 'keyword',
+      metadata: {}
     });
   });
 
@@ -52,7 +60,9 @@ describe('subscriptionDetection', () => {
     expect(result).toEqual({
       isSubscription: true,
       glassCount: 4,
-      subscriptionType: 'annual'
+      interval: 'annual',
+      provider: 'keyword',
+      metadata: {}
     });
   });
 
@@ -61,7 +71,9 @@ describe('subscriptionDetection', () => {
     expect(result).toEqual({
       isSubscription: true,
       glassCount: 4,
-      subscriptionType: 'annual'
+      interval: 'annual',
+      provider: 'keyword',
+      metadata: {}
     });
   });
 
@@ -75,7 +87,9 @@ describe('subscriptionDetection', () => {
     expect(result).toEqual({
       isSubscription: true,
       glassCount: 4,
-      subscriptionType: 'annual'
+      interval: 'annual',
+      provider: 'keyword',
+      metadata: {}
     });
   });
 
@@ -84,7 +98,9 @@ describe('subscriptionDetection', () => {
     expect(result).toEqual({
       isSubscription: true,
       glassCount: 4,
-      subscriptionType: 'annual'
+      interval: 'annual',
+      provider: 'keyword',
+      metadata: {}
     });
   });
 
@@ -93,7 +109,9 @@ describe('subscriptionDetection', () => {
     expect(result).toEqual({
       isSubscription: true,
       glassCount: 1,
-      subscriptionType: 'subscription'
+      interval: 'subscription',
+      provider: 'keyword',
+      metadata: {}
     });
   });
 
@@ -102,7 +120,9 @@ describe('subscriptionDetection', () => {
     expect(result).toEqual({
       isSubscription: false,
       glassCount: 0,
-      subscriptionType: null
+      interval: null,
+      provider: null,
+      metadata: {}
     });
   });
 
@@ -132,7 +152,9 @@ describe('subscriptionDetection', () => {
     expect(result).toEqual({
       isSubscription: true,
       glassCount: 1,
-      subscriptionType: 'quarterly'
+      interval: 'quarterly',
+      provider: 'keyword',
+      metadata: {}
     });
   });
 });
