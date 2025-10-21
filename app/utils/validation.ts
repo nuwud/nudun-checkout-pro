@@ -25,12 +25,20 @@ export const upsellSchema = z.object({
   discountCode: z.string().max(32).nullish(),
 });
 
+export const glasswatesSchema = z.object({
+  selectedProductHandle: z.string().min(1).max(255),
+  selectedProductImage: z.string().optional(),
+  selectedProductTitle: z.string().optional(),
+  selectedProductPrice: z.string().optional(),
+});
+
 export const messagingConfigSchema = z.object({
   hero: heroMessagingSchema,
   currencyCode: z.string().min(3).max(8),
   thresholds: z.array(thresholdSchema).max(10),
   upsell: upsellSchema,
   bonusAttachments: bonusAttachmentCollectionSchema.optional(),
+  glasswares: glasswatesSchema.optional(),
 });
 
 export type MessagingConfigInput = z.infer<typeof messagingConfigSchema>;

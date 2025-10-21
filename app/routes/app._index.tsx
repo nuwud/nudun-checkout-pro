@@ -48,6 +48,12 @@ type FormState = {
     discountCode: string;
   };
   bonusAttachments: BonusAttachmentsByRule;
+  glasswares: {
+    selectedProductHandle: string;
+    selectedProductImage?: string;
+    selectedProductTitle?: string;
+    selectedProductPrice?: string;
+  };
 };
 
 const DEFAULT_TONE_OPTIONS = [
@@ -489,12 +495,23 @@ export default function MessagingConsole() {
     });
   };
 
+
   const resetToDefaults = () => {
     resetFetcher.submit(JSON.stringify({ intent: "reset" }), {
       method: "POST",
       encType: "application/json",
       action: "/api/messaging-settings",
     });
+  };
+
+  const handleProductSelectionChange = (productHandle: string) => {
+    setFormState((prev) => ({
+      ...prev,
+      glasswares: {
+        ...prev.glasswares,
+        selectedProductHandle: productHandle,
+      },
+    }));
   };
 
   return (
@@ -601,6 +618,11 @@ export default function MessagingConsole() {
           formState={formState}
           onChange={handleUpsellChange}
           onCopyChange={handleUpsellCopyChange}
+        />
+
+        <ProductSelectionCard
+          formState={formState}
+          onChange={handleProductSelectionChange}
         />
 
         <AuditLog audits={audits} />
@@ -924,6 +946,195 @@ function UpsellCard({
   );
 }
 
+function ProductSelectionCard({
+  formState,
+  onChange,
+}: {
+  formState: FormState;
+  onChange: (productHandle: string) => void;
+}) {
+  const glassProducts = [
+    { handle: "premium-glass", name: "Premium Glass", price: "$12.00" },
+    { handle: "standard-glass", name: "Standard Glass", price: "$8.00" },
+    { handle: "eco-glass", name: "Eco Glass", price: "$10.00" },
+  ];
+
+  const selectedProduct = glassProducts.find(
+    (p) => p.handle === formState.glasswares.selectedProductHandle
+  );
+
+  return (
+    <div style={cardStyle}>
+      <h2 style={cardHeadingStyle}>Included Product Selection</h2>
+      <p style={helpTextStyle}>
+        Choose which product is included with subscriptions. The product image
+        and savings will be displayed in checkout messages.
+      </p>
+
+      <div style={{ display: "grid", gap: "1.5rem" }}>
+        {/* Product Selector */}
+        <div style={{ display: "grid", gap: "0.75rem" }}>
+          <label htmlFor="product-select" style={labelStyle}>
+            <strong>Select Product</strong>
+          </label>
+          <select
+            id="product-select"
+            value={formState.glasswares.selectedProductHandle}
+            onChange={(e) => onChange((e.target as HTMLSelectElement).value)}
+            style={{
+              ...inputStyle,
+              cursor: "pointer",
+              appearance: "none",
+              backgroundImage:
+                "url(\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e\")",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "right 0.75rem center",
+              backgroundSize: "1.25rem",
+              paddingRight: "2.5rem",
+            }}
+          >
+            <option value="">-- Select a product --</option>
+            {glassProducts.map((product) => (
+              <option key={product.handle} value={product.handle}>
+                {product.name} ({product.price})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Product Preview */}
+        {selectedProduct && (
+          <div
+            style={{
+              padding: "1rem",
+              borderRadius: "0.75rem",
+              backgroundColor: "var(--p-color-bg-fill, #f6f6f7)",
+              border: "1px solid var(--p-color-border-subdued, #e5e7eb)",
+              display: "grid",
+              gap: "1rem",
+            }}
+          >
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "1rem",
+                alignItems: "start",
+              }}
+            >
+              {/* Product Image Placeholder */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  aspectRatio: "1",
+                  backgroundColor: "#e5e7eb",
+                  borderRadius: "0.5rem",
+                  fontSize: "3rem",
+                }}
+              >
+                🥃
+              </div>
+
+              {/* Product Details */}
+              <div style={{ display: "grid", gap: "0.5rem" }}>
+                <div>
+                  <p style={{ ...metaTextStyle, marginBottom: "0.25rem" }}>
+                    Product Name
+                  </p>
+                  <p style={{ margin: 0, fontWeight: 600, fontSize: "1rem" }}>
+                    {selectedProduct.name}
+                  </p>
+                </div>
+                <div>
+                  <p style={{ ...metaTextStyle, marginBottom: "0.25rem" }}>
+                    Unit Price
+                  </p>
+                  <p style={{ margin: 0, fontWeight: 600, fontSize: "1rem" }}>
+                    {selectedProduct.price}
+                  </p>
+                </div>
+                <div>
+                  <p style={{ ...metaTextStyle, marginBottom: "0.25rem" }}>
+                    Savings per Item
+                  </p>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontWeight: 600,
+                      fontSize: "1rem",
+                      color: "var(--p-color-success, #137752)",
+                    }}
+                  >
+                    Save 20% per quarter
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Savings Calculator */}
+            <div
+              style={{
+                padding: "0.75rem",
+                backgroundColor: "var(--p-color-bg-success-faint, #e3f1df)",
+                borderRadius: "0.5rem",
+                display: "grid",
+                gap: "0.5rem",
+              }}
+            >
+              <p style={{ margin: 0, fontWeight: 600, fontSize: "0.9rem" }}>
+                💰 Savings Examples
+              </p>
+              <div style={{ display: "grid", gap: "0.25rem", fontSize: "0.85rem" }}>
+                <p style={{ margin: 0 }}>
+                  • 1 Glass: Save {selectedProduct.price}
+                </p>
+                <p style={{ margin: 0 }}>
+                  • 2 Glasses: Save ${(parseFloat(selectedProduct.price.slice(1)) * 2).toFixed(2)}
+                </p>
+                <p style={{ margin: 0 }}>
+                  • 3 Glasses: Save ${(parseFloat(selectedProduct.price.slice(1)) * 3).toFixed(2)}
+                </p>
+              </div>
+            </div>
+
+            {/* Message Preview */}
+            <div
+              style={{
+                padding: "0.75rem",
+                backgroundColor: "var(--p-color-bg-surface, #ffffff)",
+                borderRadius: "0.5rem",
+                border: "1px solid var(--p-color-border-subdued, #e5e7eb)",
+                display: "grid",
+                gap: "0.5rem",
+              }}
+            >
+              <p style={{ margin: 0, fontWeight: 600, fontSize: "0.9rem" }}>
+                Preview in Checkout
+              </p>
+              <div
+                style={{
+                  padding: "0.75rem",
+                  backgroundColor: "#e6f2ed",
+                  borderLeft: "4px solid #137752",
+                  borderRadius: "0.25rem",
+                  fontSize: "0.9rem",
+                }}
+              >
+                <strong>🥃 3 {selectedProduct.name}s Included</strong>
+                <p style={{ margin: "0.5rem 0 0 0", fontSize: "0.85rem" }}>
+                  Complimentary glasses included with your quarterly subscription • Value: {selectedProduct.price}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function AuditLog({ audits }: { audits: ConfigAuditLog[] }) {
   return (
     <div style={cardStyle}>
@@ -974,6 +1185,12 @@ function mapConfigToForm(config: MessagingConfigResponse): FormState {
       discountCode: config.upsell.discountCode ?? "",
     },
     bonusAttachments: { ...config.bonusAttachments },
+    glasswares: {
+      selectedProductHandle: config.glasswares?.selectedProductHandle ?? "premium-glass",
+      selectedProductImage: config.glasswares?.selectedProductImage,
+      selectedProductTitle: config.glasswares?.selectedProductTitle,
+      selectedProductPrice: config.glasswares?.selectedProductPrice,
+    },
   };
 }
 
@@ -1003,6 +1220,12 @@ function mapFormToPayload(state: FormState): MessagingConfigInput {
       discountCode: state.upsell.discountCode.trim() || null,
     },
     bonusAttachments: attachments,
+    glasswares: {
+      selectedProductHandle: state.glasswares.selectedProductHandle,
+      selectedProductImage: state.glasswares.selectedProductImage,
+      selectedProductTitle: state.glasswares.selectedProductTitle,
+      selectedProductPrice: state.glasswares.selectedProductPrice,
+    },
   };
 }
 

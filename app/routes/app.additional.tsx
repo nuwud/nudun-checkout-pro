@@ -66,8 +66,12 @@ export default function AnalyticsDashboard() {
           {mockData.commonSubscriptions.map((sub) => (
             <div key={sub.type} style={subscriptionCardStyle}>
               <div style={subscriptionHeaderStyle}>
-                <div style={subscriptionLabelStyle}>{sub.type}</div>
-                <div style={subscriptionCountStyle}>{sub.count}</div>
+                <div style={subscriptionLabelStyle}>
+                  <s-text>{sub.type}</s-text>
+                </div>
+                <div style={subscriptionCountStyle}>
+                  <s-text>{sub.count}</s-text>
+                </div>
               </div>
               <div style={progressBarContainerStyle}>
                 <div
@@ -78,7 +82,9 @@ export default function AnalyticsDashboard() {
                   }}
                 />
               </div>
-              <div style={subscriptionPercentStyle}>{sub.percentage}% of total</div>
+              <div style={subscriptionPercentStyle}>
+                <s-text>{sub.percentage}% of total</s-text>
+              </div>
             </div>
           ))}
         </div>
@@ -90,8 +96,12 @@ export default function AnalyticsDashboard() {
           {mockData.recentActivity.map((activity, index) => (
             <div key={index} style={activityItemStyle}>
               <div style={activityLeftStyle}>
-                <div style={activityLabelStyle}>{activity.action}</div>
-                <div style={activityTimestampStyle}>{activity.timestamp}</div>
+                <div style={activityLabelStyle}>
+                  <s-text>{activity.action}</s-text>
+                </div>
+                <div style={activityTimestampStyle}>
+                  <s-text>{activity.timestamp}</s-text>
+                </div>
               </div>
               <s-badge tone={getActivityBadgeStatus(activity.type)}>
                 {activity.type.toUpperCase()}
@@ -149,9 +159,17 @@ function MetricCard({
   return (
     <div style={metricCardStyle}>
       <div style={metricIconStyle}>{icon}</div>
-      <div style={metricLabelStyle}>{label}</div>
-      <div style={metricValueStyle}>{value}</div>
-      {trend && <div style={metricTrendStyle(highlight)}>{trend}</div>}
+      <div style={metricLabelStyle}>
+        <s-text>{label}</s-text>
+      </div>
+      <div style={metricValueStyle}>
+        <s-text>{value}</s-text>
+      </div>
+      {trend && (
+        <div style={metricTrendStyle(highlight)}>
+          <s-text>{trend}</s-text>
+        </div>
+      )}
     </div>
   );
 }
