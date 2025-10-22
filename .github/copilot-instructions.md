@@ -1,5 +1,20 @@
 ﻿# NUDUN Checkout Pro - AI Agent Guide
 
+## 🔎 Rapid Orientation (New)
+- **Operating rhythm**: Trigger `/speckit.constitution` → `/speckit.specify` → `/speckit.plan` → `/speckit.tasks` before coding; constitution lives at `.specify/memory/constitution.md` and governs privacy + release readiness.
+- **Architecture basics**: Admin app under `app/`, checkout extension in `extensions/nudun-messaging-engine/`, data tier via Prisma in `prisma/`; messaging console (`app/routes/app._index.tsx`) talks to `/api/messaging-settings` through the service layer.
+- **Messaging services**: `app/services/messaging.server.ts` wraps Prisma transactions, audit logging (capped at 20), defaults from `app/data/default-messaging.json`; `app/services/messaging-bonus.server.ts` manages env-driven bonus attachments per rule key.
+- **Extension contract**: API 2025-10 uses Preact JSX (`render(<Extension />, document.body)`), leans on the `shopify` global for reactive state, formats Money via `{amount, currencyCode}`, and keeps new components inside `src/components/` or `src/utils/`.
+- **Tooling checkpoints**: `npm run dev` (Shopify CLI + Vite), `npm run setup` (Prisma prepare), `npm run typecheck` + `npm run graphql-codegen`, extension tests via `npm --workspace extensions/nudun-messaging-engine test`, bonus seeds with `npm run seed:bonus-attachments`.
+- **QA reminders**: Follow `docs/session-notes/DEBUGGING-LESSONS-LEARNED.md`, ensure `shopify.extension.toml` stays on 2025-10, keep logging minimal for Shopify review, and rebuild SQLite via `npm run setup` when tables vanish.
+
+## Checkout Messaging Configuration
+- **Admin console flow**: `app/routes/app._index.tsx` loader pulls `MessagingConfigResponse` (hero copy, thresholds, upsell, bonus attachments) via `getMessagingConfig`; actions hit `/api/messaging-settings` for PUT (validate with Zod, persist via `upsertMessagingConfig`) and POST reset (calls `resetMessagingConfig`).
+- **Persistence**: Prisma models (`merchantMessagingConfig`, `thresholdSetting`, `upsellSetting`, `messagingBonusAttachment`) live in `prisma/schema.prisma`; defaults hydrate from `app/data/default-messaging.json` and env-driven bonus seeds in `app/services/messaging-bonus.server.ts` (`loadDefaultBonusAttachments`).
+- **Customization knobs**: Hero copy, threshold tiers, upsell content, and bonus attachments all editable from the admin UI; keep schema changes in sync with client form state (`mapConfigToForm`/`mapFormToPayload`) and Zod validators in `app/utils/validation.ts` + `app/utils/messaging-bonus.validation.ts`.
+- **Extension consumption**: Checkout UI extension (`extensions/nudun-messaging-engine/src/Checkout.jsx`) consumes the synced config through Preact components (`BannerQueue`, `UpsellBanner`, `GlasswareMessage`, inclusion messaging) and utility detectors (`src/utils/*`). When introducing new messages, add server fields + Prisma columns, expose through API response, then hydrate extension modules.
+- **Spec-Kit context**: Detailed requirements and phased roadmaps live under `.specify/` (see `specs/dynamic-messaging-v2.md`, `plans/dynamic-messaging-v2-plan.md`, `tasks/dynamic-messaging-v2-tasks.md`)—use them to align app changes with extension behavior before modifying checkout messaging.
+
 ## � Spec-Driven Development with Spec-Kit
 
 This project uses [GitHub Spec-Kit](https://github.com/github/spec-kit) for structured, specification-driven development.
