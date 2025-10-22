@@ -28,7 +28,7 @@ export const formatPrice = (amount, currencyCode) => {
 
 export const getMessageContent = (glassCount, interval, priceFormatted) => {
   const glassLabel = glassCount === 1 ? 'Glass' : 'Glasses';
-  const heading = `íµƒ ${glassCount} Premium ${glassLabel} Included`;
+  const heading = `ï¿½ï¿½ï¿½ ${glassCount} Premium ${glassLabel} Included`;
   
   let description = `Complimentary ${glassLabel.toLowerCase()} included with your ${interval} subscription`;
   
@@ -75,12 +75,36 @@ async function fetchSubscriptionDeals() {
 /**
  * Find the deal that matches a detected subscription
  * @param {Array<SubscriptionDeal>} deals
- * @param {string} productHandle - Subscription product handle
+ * @param {Record<string, unknown>} subscription - Detected subscription metadata
  * @returns {SubscriptionDeal|null}
  */
-function findMatchingDeal(deals, productHandle) {
-  if (!deals || deals.length === 0) return null;
-  return deals.find((deal) => deal.productHandle === productHandle) || null;
+function findMatchingDeal(deals, subscription) {
+  if (!Array.isArray(deals) || deals.length === 0 || !subscription) {
+    return null;
+  }
+
+  const normalizedHandle =
+    typeof subscription.productHandle === 'string'
+      ? subscription.productHandle.toLowerCase()
+      : null;
+  const normalizedTitle =
+    typeof subscription.productTitle === 'string'
+      ? subscription.productTitle.toLowerCase()
+      : null;
+
+  return (
+    deals.find((deal) => {
+      const dealHandle =
+        typeof deal?.productHandle === 'string' ? deal.productHandle.toLowerCase() : null;
+      if (normalizedHandle && dealHandle && dealHandle === normalizedHandle) {
+        return true;
+      }
+
+      const dealTitle =
+        typeof deal?.productTitle === 'string' ? deal.productTitle.toLowerCase() : null;
+      return Boolean(normalizedTitle && dealTitle && dealTitle === normalizedTitle);
+    }) || null
+  );
 }
 
 export default function GlasswareMessage({
@@ -106,10 +130,22 @@ export default function GlasswareMessage({
         const detection = detectSubscription(line);
         if (!detection.isSubscription) return null;
         
-        // Enrich detection with product handle if available
+        const merchandise = /** @type {Record<string, unknown>} */ (line.merchandise ?? {});
+        const product = /** @type {Record<string, unknown>} */ (merchandise.product ?? {});
+
+        const productHandle =
+          typeof product.handle === 'string' ? product.handle : null;
+        const productTitle =
+          typeof product.title === 'string'
+            ? product.title
+            : typeof merchandise.title === 'string'
+              ? merchandise.title
+              : null;
+
         return {
           ...detection,
-          productHandle: line.merchandise?.product?.handle || null
+          productHandle,
+          productTitle: productTitle || null
         };
       })
       .filter(Boolean);
@@ -126,13 +162,15 @@ export default function GlasswareMessage({
   }
   
   // Get locale from shopify global if available
-  const locale = shopify?.localization?.value?.isoCode?.toLowerCase() || 'en';
+  const primaryLocale = shopify?.localization?.language?.current?.isoCode;
+  const extensionLocale = shopify?.localization?.extensionLanguage?.current?.isoCode;
+  const locale = (primaryLocale || extensionLocale || 'en').toLowerCase();
   
   return (
     <s-stack direction="block">
       {subscriptionLines.map((sub, idx) => {
         // Find the deal that matches this subscription
-        const deal = findMatchingDeal(subscriptionDeals, sub.productHandle);
+  const deal = findMatchingDeal(subscriptionDeals, sub);
         
         if (!deal) {
           // No deal configured for this subscription type
@@ -145,7 +183,7 @@ export default function GlasswareMessage({
         return (
           <s-banner key={idx} tone="success">
             <s-heading>
-              íµƒ {deal.quantity} {deal.includedProductTitle} Included
+              ï¿½ï¿½ï¿½ {deal.quantity} {deal.includedProductTitle} Included
             </s-heading>
             <s-text>{message || `${deal.quantity} ${deal.includedProductTitle} included with your subscription`}</s-text>
           </s-banner>
